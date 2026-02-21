@@ -115,6 +115,8 @@ branch="$(git rev-parse --abbrev-ref HEAD)"
 sed -E -i "s/^version = \"[0-9]+\.[0-9]+\.[0-9]+\"$/version = \"${new_version}\"/" pyproject.toml
 sed -E -i "s/^__version__ = \"[0-9]+\.[0-9]+\.[0-9]+\"$/__version__ = \"${new_version}\"/" src/tutr/__init__.py
 
+uv run poe check
+
 git add pyproject.toml src/tutr/__init__.py uv.lock
 git commit -m "release: ${tag}"
 git push origin "$branch"
