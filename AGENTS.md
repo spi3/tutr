@@ -25,3 +25,7 @@ Python CLI tool using `uv` (with `uv_build` backend) and `src/` layout.
 ## Self-Refinement
 
 When an agent discovers new information, conventions, or workflow guidance that is important and relevant to all agents working on this project, the agent **MUST** add it to `AGENTS.md` as part of the same change.
+
+## Conventions
+
+- Prefer structured models (for example, Pydantic models) over untyped `dict` values for config and other cross-module data contracts whenever it makes sense.

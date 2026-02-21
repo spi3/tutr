@@ -2,7 +2,7 @@
 
 import getpass
 
-from tutr.config import PROVIDERS, save_config
+from tutr.config import PROVIDERS, TutrConfig, save_config
 
 PROVIDER_MODELS = {
     "gemini": [
@@ -27,7 +27,7 @@ PROVIDER_MODELS = {
 }
 
 
-def run_setup() -> dict:
+def run_setup() -> TutrConfig:
     """Run interactive setup and return the saved config."""
     print("\nWelcome to tutr! Let's get you set up.\n")
 
@@ -58,9 +58,7 @@ def run_setup() -> dict:
     model = models[_prompt_choice(len(models)) - 1][0]
 
     # 4. Save
-    config: dict = {"provider": provider, "model": model}
-    if api_key:
-        config["api_key"] = api_key
+    config = TutrConfig(provider=provider, model=model, api_key=api_key or None)
 
     save_config(config)
     print("\nConfiguration saved to ~/.tutr/config.json\n")

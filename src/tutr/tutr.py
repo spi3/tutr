@@ -4,6 +4,7 @@ import logging
 import shutil
 
 from tutr.context import gather_context, get_system_info
+from tutr.config import TutrConfig
 from tutr.llm import query_llm
 from tutr.models import CommandResponse
 from tutr.prompt import build_messages
@@ -24,7 +25,7 @@ def parse_input(words: list[str]) -> tuple[str | None, str]:
     return cmd, query
 
 
-def run(words: list[str], config: dict) -> CommandResponse:
+def run(words: list[str], config: TutrConfig) -> CommandResponse:
     """Run the core tutr pipeline: parse input, gather context, query LLM."""
     cmd, query = parse_input(words)
     context = gather_context(cmd)

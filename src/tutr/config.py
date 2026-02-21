@@ -4,6 +4,9 @@ import json
 import logging
 import os
 from pathlib import Path
+from typing import Any
+
+from pydantic import BaseModel
 
 log = logging.getLogger(__name__)
 
@@ -20,33 +23,45 @@ PROVIDERS = {
 }
 
 
-def load_config() -> dict:
+class TutrConfig(BaseModel):
+    """Runtime configuration for tutr."""
+
+    provider: str | None = None
+    model: str = DEFAULT_MODEL
+    api_key: str | None = None
+
+
+def load_config() -> TutrConfig:
     """Load config from file, with env var overrides."""
-    config = {}
+    raw_config: dict[str, Any] = {}
 
     if CONFIG_FILE.exists():
         with open(CONFIG_FILE) as f:
-            config = json.load(f)
+            loaded = json.load(f)
+        if isinstance(loaded, dict):
+            raw_config = loaded
         log.debug("loaded config from %s", CONFIG_FILE)
+
+    config = TutrConfig.model_validate(raw_config)
 
     # Env var overrides
     if model := os.environ.get("TUTR_MODEL"):
-        config["model"] = model
+        config.model = model
 
-    provider = config.get("provider")
+    provider = config.provider
     if provider and provider in PROVIDERS:
         env_key = PROVIDERS[provider]["env_key"]
         if env_key and (api_key := os.environ.get(env_key)):
-            config["api_key"] = api_key
+            config.api_key = api_key
 
     return config
 
 
-def save_config(config: dict) -> None:
+def save_config(config: TutrConfig) -> None:
     """Save config to file."""
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     with open(CONFIG_FILE, "w") as f:
-        json.dump(config, f, indent=2)
+        json.dump(config.model_dump(exclude_none=True), f, indent=2)
     # Restrict permissions — file contains API key
     CONFIG_FILE.chmod(0o600)
     log.debug("saved config to %s", CONFIG_FILE)

@@ -2,13 +2,13 @@
 
 import os
 
-from tutr.config import load_config, needs_setup
+from tutr.config import TutrConfig, load_config, needs_setup
 from tutr.setup import run_setup
 from tutr.tutr import run
 from tutr.shell.constants import BOLD, RED, RESET
 
 
-def load_shell_config() -> dict:
+def load_shell_config() -> TutrConfig:
     """Load or bootstrap config for shell mode."""
     if needs_setup():
         return run_setup()
@@ -24,7 +24,7 @@ def _should_ask_tutor(exit_code: int, command: str) -> bool:
     return exit_code != 0 and bool(command.strip())
 
 
-def _ask_tutor(cmd: str, output: str, config: dict) -> tuple[bytes, str | None]:
+def _ask_tutor(cmd: str, output: str, config: TutrConfig) -> tuple[bytes, str | None]:
     """Query tutr with a failed command and return display text and command."""
     query = f"fix this command: {cmd}"
     if output:

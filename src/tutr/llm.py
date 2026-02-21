@@ -8,7 +8,7 @@ import litellm
 log = logging.getLogger(__name__)
 from pydantic import ValidationError
 
-from tutr.config import DEFAULT_MODEL
+from tutr.config import TutrConfig
 from tutr.models import CommandResponse
 from tutr.wait_indicator import build_llm_wait_indicator
 
@@ -16,11 +16,11 @@ from tutr.wait_indicator import build_llm_wait_indicator
 litellm.suppress_debug_info = True
 
 
-def query_llm(messages: list[dict], config: dict | None = None) -> CommandResponse:
+def query_llm(messages: list[dict], config: TutrConfig | None = None) -> CommandResponse:
     """Send messages to the LLM and return a parsed CommandResponse."""
-    config = config or {}
-    model = config.get("model", DEFAULT_MODEL)
-    api_key = config.get("api_key")
+    config = config or TutrConfig()
+    model = config.model
+    api_key = config.api_key
     log.debug("model=%s", model)
     log.debug("messages=%s", json.dumps(messages, indent=2))
 
