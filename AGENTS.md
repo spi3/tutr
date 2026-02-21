@@ -15,6 +15,7 @@ uv run ruff format . # Format
 uv run mypy          # Type-check
 uv add <pkg>         # Add a dependency
 uv build             # Build wheel + sdist into dist/
+git config core.hooksPath .githooks  # Enable repo-managed git hooks
 ```
 
 ## Architecture
@@ -35,3 +36,4 @@ When an agent discovers new information, conventions, or workflow guidance that 
 - Prefer structured models (for example, Pydantic models) over untyped `dict` values for config and other cross-module data contracts whenever it makes sense.
 - Use `uv run poe check` as the default pre-merge validation command; it runs ruff lint, ruff format check, mypy, and pytest.
 - Keep `mypy` in strict mode for `src/`; for `tests/`, use `tool.mypy.overrides` to relax `disallow_untyped_defs`/`disallow_untyped_calls` when needed instead of weakening global strictness.
+- The repository pre-commit hook lives at `.githooks/pre-commit` and runs `uv run poe check`; enable it locally with `git config core.hooksPath .githooks`.
