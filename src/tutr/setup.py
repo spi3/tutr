@@ -1,8 +1,8 @@
-"""Interactive first-run setup for tmht."""
+"""Interactive first-run setup for tutr."""
 
 import getpass
 
-from tmht.config import PROVIDERS, save_config
+from tutr.config import PROVIDERS, save_config
 
 PROVIDER_MODELS = {
     "gemini": [
@@ -29,7 +29,7 @@ PROVIDER_MODELS = {
 
 def run_setup() -> dict:
     """Run interactive setup and return the saved config."""
-    print("\nWelcome to tmht! Let's get you set up.\n")
+    print("\nWelcome to tutr! Let's get you set up.\n")
 
     # 1. Select provider
     providers = list(PROVIDERS.keys())
@@ -63,7 +63,7 @@ def run_setup() -> dict:
         config["api_key"] = api_key
 
     save_config(config)
-    print("\nConfiguration saved to ~/.tmht/config.json\n")
+    print("\nConfiguration saved to ~/.tutr/config.json\n")
 
     return config
 

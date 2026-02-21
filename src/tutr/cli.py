@@ -1,18 +1,18 @@
-"""Command-line interface for tmht."""
+"""Command-line interface for tutr."""
 
 import argparse
 import logging
 import sys
 
-from tmht import __version__
-from tmht.config import load_config, needs_setup
-from tmht.setup import run_setup
-from tmht.tmht import run
+from tutr import __version__
+from tutr.config import load_config, needs_setup
+from tutr.setup import run_setup
+from tutr.tutr import run
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        prog="tmht",
+        prog="tutr",
         description="Tell Me How To — AI-powered terminal command assistant",
     )
     parser.add_argument(

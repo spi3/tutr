@@ -1,5 +1,5 @@
 [project]
-name = "tmht"
+name = "tutr"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [project.scripts]
-tmht = "tmht.cli:entrypoint"
+tutr = "tutr.cli:entrypoint"
 test = "pytest:main"
 
 [build-system]

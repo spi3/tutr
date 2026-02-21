@@ -2,7 +2,7 @@
 
 import pytest
 
-from tmht.prompt import SYSTEM_PROMPT, build_messages
+from tutr.prompt import SYSTEM_PROMPT, build_messages
 
 
 class TestBuildMessages:

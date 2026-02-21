@@ -1,9 +1,9 @@
-# tmht — Tell Me How To
+# tutr — Tell Me How To
 
 A stupid simple, AI-powered terminal assistant that generates commands from natural language.
 
 ```
-$ tmht git create and switch to a new branch called testing
+$ tutr git create and switch to a new branch called testing
 
   git checkout -b testing
 ```
@@ -13,19 +13,19 @@ $ tmht git create and switch to a new branch called testing
 Requires Python 3.10+.
 
 ```bash
-git clone https://github.com/spi/tmht.git
-cd tmht
+git clone https://github.com/spi/tutr.git
+cd tutr
 uv sync
 ```
 
 ## Setup
 
-On first run, tmht launches an interactive setup to select your provider, model, and API key:
+On first run, tutr launches an interactive setup to select your provider, model, and API key:
 
 ```
-$ tmht git "show recent commits"
+$ tutr git "show recent commits"
 
-Welcome to tmht! Let's get you set up.
+Welcome to tutr! Let's get you set up.
 
 Select your LLM provider:
   1. Gemini
@@ -45,23 +45,23 @@ Select a model:
 
   Enter choice (1-3): 1
 
-Configuration saved to ~/.tmht/config.json
+Configuration saved to ~/.tutr/config.json
 ```
 
-Setup is skipped if `~/.tmht/config.json` already exists or provider API key environment variables are set.
+Setup is skipped if `~/.tutr/config.json` already exists or provider API key environment variables are set.
 
 ## Usage
 
 ```
-tmht <command> <what you want to do>
+tutr <command> <what you want to do>
 ```
 
 ### Examples
 
 ```bash
-tmht git "create and switch to a new branch called testing"
-tmht sed "replace all instances of 'foo' with 'bar' in myfile.txt"
-tmht curl "http://example.com and display all request headers"
+tutr git "create and switch to a new branch called testing"
+tutr sed "replace all instances of 'foo' with 'bar' in myfile.txt"
+tutr curl "http://example.com and display all request headers"
 ```
 
 ### Arguments
@@ -81,11 +81,11 @@ tmht curl "http://example.com and display all request headers"
 
 ## Configuration
 
-Config is stored in `~/.tmht/config.json`. Environment variables override the config file.
+Config is stored in `~/.tutr/config.json`. Environment variables override the config file.
 
 | Environment Variable | Description | Default |
 |---|---|---|
-| `TMHT_MODEL` | LLM model to use ([litellm format](https://docs.litellm.ai/docs/providers)) | `gemini/gemini-3-flash-preview` |
+| `TUTR_MODEL` | LLM model to use ([litellm format](https://docs.litellm.ai/docs/providers)) | `gemini/gemini-3-flash-preview` |
 | `GEMINI_API_KEY` | Gemini API key | — |
 | `ANTHROPIC_API_KEY` | Anthropic API key | — |
 | `OPENAI_API_KEY` | OpenAI API key | — |
@@ -93,5 +93,5 @@ Config is stored in `~/.tmht/config.json`. Environment variables override the co
 To re-run setup, delete the config file:
 
 ```bash
-rm ~/.tmht/config.json
+rm ~/.tutr/config.json
 ```

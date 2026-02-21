@@ -1,11 +1,11 @@
-"""Unit tests for tmht.cli."""
+"""Unit tests for tutr.cli."""
 
 import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-from tmht.cli import entrypoint, main
+from tutr.cli import entrypoint, main
 
 
 def _make_llm_result(command="git checkout -b testing"):
@@ -23,7 +23,7 @@ def _cli_patches(**overrides):
         run=MagicMock(return_value=_make_llm_result()),
     )
     defaults.update(overrides)
-    return patch.multiple("tmht.cli", **defaults)
+    return patch.multiple("tutr.cli", **defaults)
 
 
 # ---------------------------------------------------------------------------
@@ -129,7 +129,7 @@ class TestEntrypoint:
     def test_entrypoint_raises_system_exit(self):
         with _cli_patches():
             with pytest.raises(SystemExit) as exc_info:
-                with patch.object(sys, "argv", ["tmht", "git", "status"]):
+                with patch.object(sys, "argv", ["tutr", "git", "status"]):
                     entrypoint()
 
         assert exc_info.value.code == 0
@@ -137,7 +137,7 @@ class TestEntrypoint:
     def test_entrypoint_exits_with_one_on_error(self):
         with _cli_patches(run=MagicMock(side_effect=Exception("boom"))):
             with pytest.raises(SystemExit) as exc_info:
-                with patch.object(sys, "argv", ["tmht", "git", "status"]):
+                with patch.object(sys, "argv", ["tutr", "git", "status"]):
                     entrypoint()
 
         assert exc_info.value.code == 1

@@ -1,4 +1,4 @@
-"""Response models for tmht."""
+"""Response models for tutr."""
 
 from pydantic import BaseModel, Field
 

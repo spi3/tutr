@@ -1,18 +1,18 @@
-"""Unit tests for tmht.config."""
+"""Unit tests for tutr.config."""
 
 import json
 import stat
 
 import pytest
 
-import tmht.config as config_module
-from tmht.config import load_config, needs_setup, save_config
+import tutr.config as config_module
+from tutr.config import load_config, needs_setup, save_config
 
 
 @pytest.fixture(autouse=True)
 def isolated_config(tmp_path, monkeypatch):
     """Redirect CONFIG_DIR and CONFIG_FILE to a temp directory for every test."""
-    config_dir = tmp_path / ".tmht"
+    config_dir = tmp_path / ".tutr"
     config_file = config_dir / "config.json"
     monkeypatch.setattr(config_module, "CONFIG_DIR", config_dir)
     monkeypatch.setattr(config_module, "CONFIG_FILE", config_file)
@@ -49,17 +49,17 @@ class TestLoadConfig:
         assert result["model"] == "openai/gpt-4o"
         assert result["provider"] == "openai"
 
-    def test_tmht_model_env_overrides_file(self, config_dir, config_file, monkeypatch):
+    def test_tutr_model_env_overrides_file(self, config_dir, config_file, monkeypatch):
         config_dir.mkdir(parents=True)
         config_file.write_text(json.dumps({"model": "openai/gpt-4o"}))
-        monkeypatch.setenv("TMHT_MODEL", "anthropic/claude-3-opus")
+        monkeypatch.setenv("TUTR_MODEL", "anthropic/claude-3-opus")
 
         result = load_config()
 
         assert result["model"] == "anthropic/claude-3-opus"
 
-    def test_tmht_model_env_sets_model_when_no_file(self, monkeypatch):
-        monkeypatch.setenv("TMHT_MODEL", "ollama/llama3")
+    def test_tutr_model_env_sets_model_when_no_file(self, monkeypatch):
+        monkeypatch.setenv("TUTR_MODEL", "ollama/llama3")
 
         result = load_config()
 
@@ -131,7 +131,7 @@ class TestLoadConfig:
     def test_file_values_preserved_alongside_overrides(self, config_dir, config_file, monkeypatch):
         config_dir.mkdir(parents=True)
         config_file.write_text(json.dumps({"provider": "openai", "extra_key": "preserved"}))
-        monkeypatch.setenv("TMHT_MODEL", "openai/gpt-4o")
+        monkeypatch.setenv("TUTR_MODEL", "openai/gpt-4o")
         monkeypatch.setenv("OPENAI_API_KEY", "openai-key")
 
         result = load_config()

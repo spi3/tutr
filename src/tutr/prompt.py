@@ -1,4 +1,4 @@
-"""Prompt construction for tmht."""
+"""Prompt construction for tutr."""
 
 SYSTEM_PROMPT = """\
 You are a terminal command assistant. Your job is to generate the exact terminal \

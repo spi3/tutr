@@ -1,4 +1,4 @@
-"""Configuration for tmht."""
+"""Configuration for tutr."""
 
 import json
 import logging
@@ -7,7 +7,7 @@ from pathlib import Path
 
 log = logging.getLogger(__name__)
 
-CONFIG_DIR = Path.home() / ".tmht"
+CONFIG_DIR = Path.home() / ".tutr"
 CONFIG_FILE = CONFIG_DIR / "config.json"
 
 DEFAULT_MODEL = "gemini/gemini-3-flash-preview"
@@ -30,7 +30,7 @@ def load_config() -> dict:
         log.debug("loaded config from %s", CONFIG_FILE)
 
     # Env var overrides
-    if model := os.environ.get("TMHT_MODEL"):
+    if model := os.environ.get("TUTR_MODEL"):
         config["model"] = model
 
     provider = config.get("provider")

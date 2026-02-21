@@ -1,4 +1,4 @@
-"""LLM interaction for tmht."""
+"""LLM interaction for tutr."""
 
 import json
 import logging
@@ -8,8 +8,8 @@ import litellm
 log = logging.getLogger(__name__)
 from pydantic import ValidationError
 
-from tmht.config import DEFAULT_MODEL
-from tmht.models import CommandResponse
+from tutr.config import DEFAULT_MODEL
+from tutr.models import CommandResponse
 
 # Suppress litellm's noisy logging
 litellm.suppress_debug_info = True

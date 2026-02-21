@@ -1,14 +1,14 @@
-"""PoC: PTY-based shell wrapper that intercepts errors and asks tmht for help.
+"""PoC: PTY-based shell wrapper that intercepts errors and asks tutr for help.
 
 Usage:
-    uv run python -m tmht.shell
+    uv run python -m tutr.shell
 
 Spawns a real interactive shell inside a PTY. All I/O passes through
 transparently — interactive programs (vim, top, etc.) work normally.
 
 A PROMPT_COMMAND hook embeds an invisible OSC marker in the output stream
 after each command. The parent process parses these markers to detect
-non-zero exit codes and automatically queries tmht with the failed command
+non-zero exit codes and automatically queries tutr with the failed command
 plus recent terminal output as context.
 """
 
@@ -23,9 +23,9 @@ import tempfile
 import termios
 import tty
 
-from tmht.config import load_config, needs_setup
-from tmht.setup import run_setup
-from tmht.tmht import run
+from tutr.config import load_config, needs_setup
+from tutr.setup import run_setup
+from tutr.tutr import run
 
 BOLD = "\033[1m"
 RED = "\033[31m"
@@ -49,22 +49,22 @@ def _set_winsize(fd: int, rows: int, cols: int, xp: int = 0, yp: int = 0) -> Non
     fcntl.ioctl(fd, termios.TIOCSWINSZ, struct.pack("HHHH", rows, cols, xp, yp))
 
 
-def _ask_tmht(cmd: str, output: str, config: dict) -> bytes:
-    """Query tmht with a failed command and return the suggestion as bytes."""
+def _ask_tutor(cmd: str, output: str, config: dict) -> bytes:
+    """Query tutr with a failed command and return the suggestion as bytes."""
     query = f"fix this command: {cmd}"
     if output:
         query += f"\n\nTerminal output:\n{output}"
     try:
         result = run(query.split(), config)
-        return f"\r\n{BOLD}tmht suggests:{RESET}\r\n  {result.command}\r\n\r\n".encode()
+        return f"\r\n{BOLD}tutr suggests:{RESET}\r\n  {result.command}\r\n\r\n".encode()
     except Exception as e:
-        return f"\r\n{RED}tmht error: {e}{RESET}\r\n".encode()
+        return f"\r\n{RED}tutr error: {e}{RESET}\r\n".encode()
 
 
 def _write_rcfile() -> str:
     """Write a temporary bashrc that sets up the PROMPT_COMMAND hook."""
     rc = tempfile.NamedTemporaryFile(
-        mode="w", prefix="tmht_", suffix=".bashrc", delete=False
+        mode="w", prefix="tutr_", suffix=".bashrc", delete=False
     )
     rc.write(
         # Source the user's normal bashrc so the shell feels familiar.
@@ -166,7 +166,7 @@ def shell_loop() -> int:
 
                     if exit_code != 0 and command:
                         ctx = recent_output.decode(errors="replace")[-2048:]
-                        suggestion = _ask_tmht(command, ctx, config)
+                        suggestion = _ask_tutor(command, ctx, config)
                         os.write(stdout_fd, suggestion)
 
                     # Reset the buffer after each prompt (successful or not).

@@ -1,9 +1,9 @@
-"""Unit tests for tmht.models."""
+"""Unit tests for tutr.models."""
 
 import pytest
 from pydantic import ValidationError
 
-from tmht.models import CommandResponse
+from tutr.models import CommandResponse
 
 
 class TestCommandResponse:

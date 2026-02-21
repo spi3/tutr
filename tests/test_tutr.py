@@ -1,8 +1,8 @@
-"""Unit tests for tmht.tmht (core logic)."""
+"""Unit tests for tutr.tutr (core logic)."""
 
 from unittest.mock import MagicMock, patch
 
-from tmht.tmht import parse_input, run
+from tutr.tutr import parse_input, run
 
 
 def _make_llm_result(command="git checkout -b testing"):
@@ -12,7 +12,7 @@ def _make_llm_result(command="git checkout -b testing"):
 
 
 def _core_patches(**overrides):
-    """Return a patch.multiple context for tmht.tmht internals."""
+    """Return a patch.multiple context for tutr.tutr internals."""
     defaults = dict(
         gather_context=MagicMock(return_value="ctx"),
         get_system_info=MagicMock(return_value="OS: Linux 6.1.0\nShell: /bin/bash"),
@@ -20,7 +20,7 @@ def _core_patches(**overrides):
         query_llm=MagicMock(return_value=_make_llm_result()),
     )
     defaults.update(overrides)
-    return patch.multiple("tmht.tmht", **defaults)
+    return patch.multiple("tutr.tutr", **defaults)
 
 
 # ---------------------------------------------------------------------------

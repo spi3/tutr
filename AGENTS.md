@@ -6,9 +6,9 @@ AI Agents **MUST** follow these instructions.
 
 ```bash
 uv sync              # Install/update project and dependencies
-uv run tmht          # Run the CLI
-uv run tmht -V       # Print version
-uv run python -m tmht  # Run as module
+uv run tutr          # Run the CLI
+uv run tutr -V       # Print version
+uv run python -m tutr  # Run as module
 uv add <pkg>         # Add a dependency
 uv build             # Build wheel + sdist into dist/
 ```
@@ -17,8 +17,10 @@ uv build             # Build wheel + sdist into dist/
 
 Python CLI tool using `uv` (with `uv_build` backend) and `src/` layout.
 
-- **Entry point**: `src/tmht/cli.py` — `entrypoint()` is registered as `[project.scripts] tmht` in `pyproject.toml`. `main(argv)` contains the argparse logic and returns an exit code.
-- **`__main__.py`**: enables `python -m tmht` invocation.
-- **Version**: single source of truth in `src/tmht/__init__.py` (`__version__`).
+- **Entry point**: `src/tutr/cli.py` — `entrypoint()` is registered as `[project.scripts] tutr` in `pyproject.toml`. `main(argv)` contains the argparse logic and returns an exit code.
+- **`__main__.py`**: enables `python -m tutr` invocation.
+- **Version**: single source of truth in `src/tutr/__init__.py` (`__version__`).
 
-@VISION.md
+## Self-Refinement
+
+When an agent discovers new information, conventions, or workflow guidance that is important and relevant to all agents working on this project, the agent **MUST** add it to `AGENTS.md` as part of the same change.

@@ -1,10 +1,10 @@
-"""Unit tests for tmht.setup."""
+"""Unit tests for tutr.setup."""
 
 from unittest.mock import call, patch
 
 import pytest
 
-from tmht.setup import _prompt_choice, run_setup
+from tutr.setup import _prompt_choice, run_setup
 
 
 # ---------------------------------------------------------------------------
@@ -78,7 +78,7 @@ class TestRunSetupGeminiWithApiKey:
             patch("builtins.input", side_effect=inputs),
             patch("builtins.print"),
             patch("getpass.getpass", return_value="my-api-key"),
-            patch("tmht.setup.save_config") as mock_save,
+            patch("tutr.setup.save_config") as mock_save,
         ):
             result = run_setup()
 
@@ -94,7 +94,7 @@ class TestRunSetupGeminiWithApiKey:
             patch("builtins.input", side_effect=inputs),
             patch("builtins.print"),
             patch("getpass.getpass", return_value="key-abc"),
-            patch("tmht.setup.save_config") as mock_save,
+            patch("tutr.setup.save_config") as mock_save,
         ):
             result = run_setup()
 
@@ -114,7 +114,7 @@ class TestRunSetupOllamaSkipsApiKey:
             patch("builtins.input", side_effect=inputs),
             patch("builtins.print"),
             patch("getpass.getpass") as mock_getpass,
-            patch("tmht.setup.save_config"),
+            patch("tutr.setup.save_config"),
         ):
             run_setup()
 
@@ -127,7 +127,7 @@ class TestRunSetupOllamaSkipsApiKey:
             patch("builtins.input", side_effect=inputs),
             patch("builtins.print"),
             patch("getpass.getpass"),
-            patch("tmht.setup.save_config") as mock_save,
+            patch("tutr.setup.save_config") as mock_save,
         ):
             result = run_setup()
 
@@ -142,7 +142,7 @@ class TestRunSetupOllamaSkipsApiKey:
             patch("builtins.input", side_effect=inputs),
             patch("builtins.print"),
             patch("getpass.getpass"),
-            patch("tmht.setup.save_config") as mock_save,
+            patch("tutr.setup.save_config") as mock_save,
         ):
             run_setup()
 
@@ -159,7 +159,7 @@ class TestRunSetupEmptyApiKey:
             patch("builtins.input", side_effect=inputs),
             patch("builtins.print"),
             patch("getpass.getpass", return_value=""),
-            patch("tmht.setup.save_config") as mock_save,
+            patch("tutr.setup.save_config") as mock_save,
         ):
             result = run_setup()
 
@@ -175,7 +175,7 @@ class TestRunSetupEmptyApiKey:
             patch("builtins.input", side_effect=inputs),
             patch("builtins.print"),
             patch("getpass.getpass", return_value="   "),
-            patch("tmht.setup.save_config") as mock_save,
+            patch("tutr.setup.save_config") as mock_save,
         ):
             result = run_setup()
 
@@ -191,7 +191,7 @@ class TestRunSetupEmptyApiKey:
             patch("builtins.input", side_effect=inputs),
             patch("builtins.print") as mock_print,
             patch("getpass.getpass", return_value=""),
-            patch("tmht.setup.save_config"),
+            patch("tutr.setup.save_config"),
         ):
             run_setup()
 
@@ -207,7 +207,7 @@ class TestRunSetupSaveConfigAlwaysCalled:
             patch("builtins.input", side_effect=inputs),
             patch("builtins.print"),
             patch("getpass.getpass", return_value="key"),
-            patch("tmht.setup.save_config") as mock_save,
+            patch("tutr.setup.save_config") as mock_save,
         ):
             run_setup()
 
@@ -220,7 +220,7 @@ class TestRunSetupSaveConfigAlwaysCalled:
             patch("builtins.input", side_effect=inputs),
             patch("builtins.print"),
             patch("getpass.getpass", return_value="sk-test"),
-            patch("tmht.setup.save_config") as mock_save,
+            patch("tutr.setup.save_config") as mock_save,
         ):
             result = run_setup()
 
