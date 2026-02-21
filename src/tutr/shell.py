@@ -190,5 +190,6 @@ def shell_loop() -> int:
     return os.waitstatus_to_exitcode(status)
 
 
-if __name__ == "__main__":
+def entrypoint() -> None:
     raise SystemExit(shell_loop())
+

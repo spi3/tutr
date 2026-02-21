@@ -15,6 +15,7 @@ dependencies = [
 [project.scripts]
 tutr = "tutr.cli:entrypoint"
 test = "pytest:main"
+shell = "tutr.shell:entrypoint"
 
 [build-system]
 requires = ["uv_build>=0.9.9,<0.10.0"]
