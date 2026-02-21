@@ -1,0 +1,194 @@
+"""PoC: PTY-based shell wrapper that intercepts errors and asks tmht for help.
+
+Usage:
+    uv run python -m tmht.shell
+
+Spawns a real interactive shell inside a PTY. All I/O passes through
+transparently — interactive programs (vim, top, etc.) work normally.
+
+A PROMPT_COMMAND hook embeds an invisible OSC marker in the output stream
+after each command. The parent process parses these markers to detect
+non-zero exit codes and automatically queries tmht with the failed command
+plus recent terminal output as context.
+"""
+
+import fcntl
+import os
+import re
+import select
+import signal
+import struct
+import sys
+import tempfile
+import termios
+import tty
+
+from tmht.config import load_config, needs_setup
+from tmht.setup import run_setup
+from tmht.tmht import run
+
+BOLD = "\033[1m"
+RED = "\033[31m"
+RESET = "\033[0m"
+
+# Invisible OSC escape sequence used as a marker in the PTY output stream.
+# Format: \033]7770;<exit_code>;<command>\007
+# Terminals ignore unknown OSC sequences, so the user never sees these.
+MARKER_RE = re.compile(rb"\033\]7770;(\d+);([^\007]*)\007")
+
+# Rolling buffer size for recent terminal output (used as LLM context).
+OUTPUT_BUFFER_SIZE = 4096
+
+
+def _winsize(fd: int) -> tuple[int, int, int, int]:
+    """Return (rows, cols, xpixel, ypixel) for the given tty fd."""
+    return struct.unpack("HHHH", fcntl.ioctl(fd, termios.TIOCGWINSZ, b"\x00" * 8))
+
+
+def _set_winsize(fd: int, rows: int, cols: int, xp: int = 0, yp: int = 0) -> None:
+    fcntl.ioctl(fd, termios.TIOCSWINSZ, struct.pack("HHHH", rows, cols, xp, yp))
+
+
+def _ask_tmht(cmd: str, output: str, config: dict) -> bytes:
+    """Query tmht with a failed command and return the suggestion as bytes."""
+    query = f"fix this command: {cmd}"
+    if output:
+        query += f"\n\nTerminal output:\n{output}"
+    try:
+        result = run(query.split(), config)
+        return f"\r\n{BOLD}tmht suggests:{RESET}\r\n  {result.command}\r\n\r\n".encode()
+    except Exception as e:
+        return f"\r\n{RED}tmht error: {e}{RESET}\r\n".encode()
+
+
+def _write_rcfile() -> str:
+    """Write a temporary bashrc that sets up the PROMPT_COMMAND hook."""
+    rc = tempfile.NamedTemporaryFile(
+        mode="w", prefix="tmht_", suffix=".bashrc", delete=False
+    )
+    rc.write(
+        # Source the user's normal bashrc so the shell feels familiar.
+        '[ -f ~/.bashrc ] && source ~/.bashrc\n'
+        # PROMPT_COMMAND runs after every command. It emits an OSC marker
+        # containing the exit code and the command that was just run.
+        "PROMPT_COMMAND='__e=$?; "
+        'printf "\\033]7770;%d;%s\\007" "$__e" '
+        '"$(history 1 | sed \"s/^[ ]*[0-9]*[ ]*//\")"\'\n'
+    )
+    rc.close()
+    return rc.name
+
+
+def shell_loop() -> int:
+    """Run the PTY-based interactive shell loop."""
+    if not sys.stdin.isatty():
+        print("Error: stdin must be a terminal", file=sys.stderr)
+        return 1
+
+    if needs_setup():
+        config = run_setup()
+    else:
+        config = load_config()
+
+    rcfile = _write_rcfile()
+    master_fd, slave_fd = os.openpty()
+
+    # Match the slave PTY size to the real terminal.
+    rows, cols, xp, yp = _winsize(sys.stdin.fileno())
+    _set_winsize(slave_fd, rows, cols, xp, yp)
+
+    pid = os.fork()
+    if pid == 0:
+        # --- Child process: exec bash attached to the slave PTY ---
+        os.close(master_fd)
+        os.setsid()
+        fcntl.ioctl(slave_fd, termios.TIOCSCTTY, 0)
+        os.dup2(slave_fd, 0)
+        os.dup2(slave_fd, 1)
+        os.dup2(slave_fd, 2)
+        if slave_fd > 2:
+            os.close(slave_fd)
+        os.execvp("bash", ["bash", "--rcfile", rcfile, "-i"])
+        os._exit(1)
+
+    # --- Parent process: shuttle bytes between real terminal and PTY ---
+    os.close(slave_fd)
+
+    # Forward window-resize signals to the child.
+    def _on_winch(_signum, _frame):
+        try:
+            r, c, xp, yp = _winsize(sys.stdin.fileno())
+            _set_winsize(master_fd, r, c, xp, yp)
+            os.kill(pid, signal.SIGWINCH)
+        except OSError:
+            pass
+
+    signal.signal(signal.SIGWINCH, _on_winch)
+
+    # Put the real terminal into raw mode so keystrokes pass through directly.
+    old_attrs = termios.tcgetattr(sys.stdin.fileno())
+    tty.setraw(sys.stdin.fileno())
+
+    recent_output = b""
+    stdin_fd = sys.stdin.fileno()
+    stdout_fd = sys.stdout.fileno()
+
+    try:
+        while True:
+            try:
+                rfds, _, _ = select.select([stdin_fd, master_fd], [], [])
+            except (OSError, ValueError):
+                break
+
+            # Stdin -> PTY master (user keystrokes)
+            if stdin_fd in rfds:
+                try:
+                    data = os.read(stdin_fd, 1024)
+                except OSError:
+                    break
+                if not data:
+                    break
+                os.write(master_fd, data)
+
+            # PTY master -> stdout (shell output)
+            if master_fd in rfds:
+                try:
+                    data = os.read(master_fd, 4096)
+                except OSError:
+                    break
+                if not data:
+                    break
+
+                # Scan for exit-code markers before displaying.
+                for match in MARKER_RE.finditer(data):
+                    exit_code = int(match.group(1))
+                    command = match.group(2).decode(errors="replace").strip()
+
+                    if exit_code != 0 and command:
+                        ctx = recent_output.decode(errors="replace")[-2048:]
+                        suggestion = _ask_tmht(command, ctx, config)
+                        os.write(stdout_fd, suggestion)
+
+                    # Reset the buffer after each prompt (successful or not).
+                    recent_output = b""
+
+                # Strip markers so the user never sees them.
+                clean = MARKER_RE.sub(b"", data)
+                if clean:
+                    os.write(stdout_fd, clean)
+
+                # Keep a rolling window of recent output for error context.
+                recent_output = (recent_output + clean)[-OUTPUT_BUFFER_SIZE:]
+    finally:
+        termios.tcsetattr(sys.stdin.fileno(), termios.TCSAFLUSH, old_attrs)
+        try:
+            os.unlink(rcfile)
+        except OSError:
+            pass
+
+    _, status = os.waitpid(pid, 0)
+    return os.waitstatus_to_exitcode(status)
+
+
+if __name__ == "__main__":
+    raise SystemExit(shell_loop())
