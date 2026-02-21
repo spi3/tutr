@@ -3,9 +3,9 @@
 import os
 
 from tutr.config import TutrConfig, load_config, needs_setup
+from tutr.constants import BOLD, CYAN, RED, RESET
 from tutr.setup import run_setup
 from tutr.tutr import run
-from tutr.shell.constants import BOLD, RED, RESET
 
 
 def load_shell_config() -> TutrConfig:
@@ -24,6 +24,13 @@ def _should_ask_tutor(exit_code: int, command: str) -> bool:
     return exit_code != 0 and bool(command.strip())
 
 
+def _supports_color() -> bool:
+    """Return whether ANSI color output should be used."""
+    if os.getenv("NO_COLOR") is not None:
+        return False
+    return os.getenv("TERM", "").lower() != "dumb"
+
+
 def _ask_tutor(cmd: str, output: str, config: TutrConfig) -> tuple[bytes, str | None]:
     """Query tutr with a failed command and return display text and command."""
     query = f"fix this command: {cmd}"
@@ -31,7 +38,14 @@ def _ask_tutor(cmd: str, output: str, config: TutrConfig) -> tuple[bytes, str | 
         query += f"\n\nTerminal output:\n{output}"
     try:
         result = run(query.split(), config)
-        msg = f"\r\n{BOLD}tutr suggests:{RESET}\r\n  {result.command}\r\n"
+        use_color = _supports_color()
+        if use_color:
+            suggestion_header = f"{BOLD}tutr suggests:{RESET}"
+            suggestion_command = f"{BOLD}{CYAN}$ {result.command}{RESET}"
+        else:
+            suggestion_header = "tutr suggests:"
+            suggestion_command = f"$ {result.command}"
+        msg = f"\r\n{suggestion_header}\r\n  {suggestion_command}\r\n"
         if config.show_explanation:
             if result.explanation.strip():
                 msg += f"  {result.explanation}\r\n"
@@ -39,7 +53,9 @@ def _ask_tutor(cmd: str, output: str, config: TutrConfig) -> tuple[bytes, str | 
                 msg += f"  source: {result.source}\r\n"
         return msg.encode(), result.command
     except Exception as e:
-        return f"\r\n{RED}tutr error: {e}{RESET}\r\n".encode(), None
+        if _supports_color():
+            return f"\r\n{RED}tutr error: {e}{RESET}\r\n".encode(), None
+        return f"\r\ntutr error: {e}\r\n".encode(), None
 
 
 def _is_auto_run_accepted(choice: bytes) -> bool:

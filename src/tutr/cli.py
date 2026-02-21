@@ -2,12 +2,30 @@
 
 import argparse
 import logging
+import os
 import sys
 
 from tutr import __version__
 from tutr.config import load_config, needs_setup
+from tutr.constants import BOLD, CYAN, RESET
 from tutr.setup import run_setup
 from tutr.tutr import run
+
+
+def _supports_color() -> bool:
+    """Return whether ANSI color output should be used."""
+    if os.getenv("NO_COLOR") is not None:
+        return False
+    if os.getenv("TERM", "").lower() == "dumb":
+        return False
+    return sys.stdout.isatty()
+
+
+def _format_suggested_command(command: str) -> str:
+    """Return a shell-like prompt line for the suggested command."""
+    if _supports_color():
+        return f"{BOLD}{CYAN}$ {command}{RESET}"
+    return f"$ {command}"
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -60,7 +78,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Error: {e}", file=sys.stderr)
         return 1
 
-    print(f"\n  {result.command}\n")
+    print(f"\n  {_format_suggested_command(result.command)}\n")
     if config.show_explanation:
         if result.explanation.strip():
             print(f"  {result.explanation}\n")
