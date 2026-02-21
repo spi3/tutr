@@ -40,6 +40,15 @@ MARKER_RE = re.compile(rb"\033\]7770;(\d+);([^\007]*)\007")
 OUTPUT_BUFFER_SIZE = 4096
 
 
+def _should_ask_tutor(exit_code: int, command: str) -> bool:
+    """Return whether a prompt marker should trigger an LLM suggestion."""
+    # Ctrl-C maps to exit code 130 in bash. Treat that as an intentional
+    # interruption rather than a command failure that needs assistance.
+    if exit_code == 130:
+        return False
+    return exit_code != 0 and bool(command.strip())
+
+
 def _winsize(fd: int) -> tuple[int, int, int, int]:
     """Return (rows, cols, xpixel, ypixel) for the given tty fd."""
     return struct.unpack("HHHH", fcntl.ioctl(fd, termios.TIOCGWINSZ, b"\x00" * 8))
@@ -164,7 +173,7 @@ def shell_loop() -> int:
                     exit_code = int(match.group(1))
                     command = match.group(2).decode(errors="replace").strip()
 
-                    if exit_code != 0 and command:
+                    if _should_ask_tutor(exit_code, command):
                         ctx = recent_output.decode(errors="replace")[-2048:]
                         suggestion = _ask_tutor(command, ctx, config)
                         os.write(stdout_fd, suggestion)
@@ -192,4 +201,3 @@ def shell_loop() -> int:
 
 def entrypoint() -> None:
     raise SystemExit(shell_loop())
-
