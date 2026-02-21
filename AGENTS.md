@@ -16,6 +16,7 @@ uv run poe publish_pypi      # Upload dist/* to PyPI
 uv run ruff check .  # Lint
 uv run ruff format . # Format
 uv run mypy          # Type-check
+cd docs && python -m http.server 8000  # Preview docs site locally
 uv add <pkg>         # Add a dependency
 uv build             # Build wheel + sdist into dist/
 git config core.hooksPath .githooks  # Enable repo-managed git hooks
@@ -49,3 +50,4 @@ When an agent discovers new information, conventions, or workflow guidance that 
 - For releases, build and validate artifacts with `uv run poe dist` before any upload, then publish with `uv run poe publish_testpypi` and `uv run poe publish_pypi` using `TWINE_USERNAME=__token__` and an API token in `TWINE_PASSWORD`.
 - When documenting shell rc auto-start for `tutr`, always include a recursion guard env var (for example `TUTR_AUTOSTARTED`) because the wrapper shell sources the user's rc file.
 - The shell wrapper launch config sets both `TUTR_ACTIVE=1` and `TUTR_AUTOSTARTED=1` for the child shell environment to prevent recursive auto-start.
+- Documentation site is static HTML/CSS in `docs/`; preview with `cd docs && python -m http.server 8000` and deploy `docs/` directly via `.github/workflows/docs.yml`.

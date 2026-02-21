@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="tutr documentation" />
+    <title>tutr Docs | Home</title>
+    <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="assets/stylesheets/site.css" />
+  </head>
+  <body>
+    <div class="site-wrap">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <a class="brand" href="index.html"><img src="assets/images/logo.svg" alt="tutr" /> tutr docs terminal hub</a>
+          <div class="blink">ONLINE: COMMAND WIZARDRY PORTAL</div>
+          <div class="theme-control">
+            <label for="theme-select">Theme</label>
+            <select id="theme-select" aria-label="Theme selector">
+              <option value="dark">Dark</option>
+              <option value="light">Light</option>
+            </select>
+          </div>
+        </div>
+        <nav class="nav">
+          <a class="active" href="index.html">Home</a>
+          <a href="getting-started.html">Getting Started</a>
+          <a href="usage.html">Usage</a>
+          <a href="configuration.html">Configuration</a>
+          <a href="development.html">Development</a>
+        </nav>
+      </header>
+
+      <main class="panel">
+        <p>WELCOME TO THE TUTR COMMAND HUB</p>
+        <h1>Your terminal, with a little extra help.</h1>
+        <p><code>tutr</code> translates plain English into shell commands and can run as an interactive wrapper in every terminal.</p>
+        <div class="retro-strip">LATEST: shell-first AI helper for real command-line work</div>
+        <p class="status-row">
+          <span class="status-pill">AI ASSISTANCE</span>
+          <span class="status-pill">IN YOUR TERMINAL</span>
+          <span class="status-pill">YOU STAY IN CHARGE</span>
+        </p>
+        <p class="actions">
+          <a class="btn primary" href="getting-started.html">Get Started</a>
+          <a class="btn" href="usage.html">Usage Guide</a>
+        </p>
+        <p>Install with uv:</p>
+        <pre><code>uv tool install tutr</code></pre>
+        <p>Need uv first? <a href="https://docs.astral.sh/uv/getting-started/installation/" target="_blank" rel="noopener noreferrer">Install uv</a>.</p>
+      </main>
+
+      <section class="grid">
+        <article class="card">
+          <h2>Fast command generation</h2>
+          <p>Translate intent like "create and switch to branch testing" into precise shell commands.</p>
+        </article>
+        <article class="card">
+          <h2>Interactive shell mode</h2>
+          <p>Run <code>tutr</code> as your shell wrapper with context cues in your prompt.</p>
+        </article>
+        <article class="card">
+          <h2>Flexible provider setup</h2>
+          <p>Configure Gemini, Anthropic, OpenAI, or local Ollama in a guided setup flow.</p>
+        </article>
+      </section>
+
+      <section class="panel">
+        <h2>Quick example</h2>
+             <h3>Shell mode</h3>
+      <pre><code>[tutr] > git create and switch to a new branch called testing                                                                                                                                      tmht/git/main !+
+  git: 'create' is not a git command. See 'git --help'.
+
+  The most similar command is
+          reset
+                                                                                                                                                                                                                      
+  tutr suggests:
+    $ git checkout -b testing
+    The 'git checkout -b' command creates a new branch named 'testing' and immediately switches to it.
+    source: man git-checkout
+  </code></pre>
+        <h3>CLI</h3>
+        <pre><code>> tutr-cli git "create and switch to a new branch called testing"                                                                                                                                  tmht/git/main !+
+                                                                                                                                                                                                                   
+    $ git checkout -b testing
+
+    Creates a new branch named 'testing' and switches the current working directory to it.
+
+    source: man git-checkout</code></pre>
+
+      </section>
+
+      <footer class="footer">tutr docs</footer>
+    </div>
+    <script src="assets/scripts/site.js"></script>
+  </body>
+</html>

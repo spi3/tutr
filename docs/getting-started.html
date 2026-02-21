@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>tutr Docs | Getting Started</title>
+    <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="assets/stylesheets/site.css" />
+  </head>
+  <body>
+    <div class="site-wrap">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <a class="brand" href="index.html"><img src="assets/images/logo.svg" alt="tutr" /> tutr docs terminal hub</a>
+          <div class="blink">SETUP CHANNEL: ACTIVE</div>
+          <div class="theme-control">
+            <label for="theme-select">Theme</label>
+            <select id="theme-select" aria-label="Theme selector">
+              <option value="dark">Dark</option>
+              <option value="light">Light</option>
+            </select>
+          </div>
+        </div>
+        <nav class="nav">
+          <a href="index.html">Home</a>
+          <a class="active" href="getting-started.html">Getting Started</a>
+          <a href="usage.html">Usage</a>
+          <a href="configuration.html">Configuration</a>
+          <a href="development.html">Development</a>
+        </nav>
+      </header>
+
+      <main class="panel">
+        <h1>Getting Started</h1>
+        <h2>Install</h2>
+        <p>Requires Python 3.10+.</p>
+        <p>Install with uv:</p>
+        <pre><code>uv tool install tutr</code></pre>
+        <p>Or install with uv:</p>
+        <pre><code>pipx install tutr</code></pre>
+        <p>Or run without installing:</p>
+        <pre><code>uvx tutr</code></pre>
+        <p>From source:</p>
+        <pre><code>git clone https://github.com/spi3/tutr.git
+cd tutr
+uv sync</code></pre>
+
+        <h2>First run setup</h2>
+        <p>On first run, <code>tutr</code> opens an interactive setup flow to choose provider, model, and API key.</p>
+        <pre><code>tutr git "show recent commits"</code></pre>
+        <p>Use <code>tutr-cli configure</code> anytime to re-run setup.</p>
+
+        <h2>Auto-start in every terminal</h2>
+        <h3>Bash (<code>~/.bashrc</code>)</h3>
+        <pre><code>if [[ $- == *i* ]] && [[ -z "${TUTR_AUTOSTARTED:-}" ]] && [[ -z "${TUTR_SKIP_AUTOSTART:-}" ]]; then
+  export TUTR_AUTOSTARTED=1
+  exec tutr
+fi</code></pre>
+        <h3>Zsh (<code>~/.zshrc</code>)</h3>
+        <pre><code>if [[ -o interactive ]] && [[ -z "${TUTR_AUTOSTARTED:-}" ]] && [[ -z "${TUTR_SKIP_AUTOSTART:-}" ]]; then
+  export TUTR_AUTOSTARTED=1
+  exec tutr
+fi</code></pre>
+        <p class="note"><strong>Note:</strong> <code>TUTR_AUTOSTARTED</code> prevents recursive startup because <code>tutr</code> sources your shell rc file.</p>
+      </main>
+
+      <footer class="footer">tutr docs</footer>
+    </div>
+    <script src="assets/scripts/site.js"></script>
+  </body>
+</html>

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>tutr Docs | Development</title>
+    <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="assets/stylesheets/site.css" />
+  </head>
+  <body>
+    <div class="site-wrap">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <a class="brand" href="index.html"><img src="assets/images/logo.svg" alt="tutr" /> tutr docs terminal hub</a>
+          <div class="blink">DEV CHANNEL: ACTIVE</div>
+          <div class="theme-control">
+            <label for="theme-select">Theme</label>
+            <select id="theme-select" aria-label="Theme selector">
+              <option value="dark">Dark</option>
+              <option value="light">Light</option>
+            </select>
+          </div>
+        </div>
+        <nav class="nav">
+          <a href="index.html">Home</a>
+          <a href="getting-started.html">Getting Started</a>
+          <a href="usage.html">Usage</a>
+          <a href="configuration.html">Configuration</a>
+          <a class="active" href="development.html">Development</a>
+        </nav>
+      </header>
+
+      <main class="panel">
+        <h1>Development</h1>
+        <h2>Local setup</h2>
+        <pre><code>uv sync --dev</code></pre>
+
+        <h2>Validate changes</h2>
+        <pre><code>uv run poe check</code></pre>
+        <p>Runs lint, format check, mypy, and tests.</p>
+
+        <h2>Preview docs locally</h2>
+        <pre><code>cd docs
+python -m http.server 8000</code></pre>
+        <p>Then open <code>http://localhost:8000</code>.</p>
+
+        <h2>Publish package artifacts</h2>
+        <pre><code>uv run poe dist
+uv run poe publish_testpypi
+uv run poe publish_pypi</code></pre>
+      </main>
+
+      <footer class="footer">tutr docs</footer>
+    </div>
+    <script src="assets/scripts/site.js"></script>
+  </body>
+</html>

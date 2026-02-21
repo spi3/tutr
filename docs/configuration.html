@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>tutr Docs | Configuration</title>
+    <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="assets/stylesheets/site.css" />
+  </head>
+  <body>
+    <div class="site-wrap">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <a class="brand" href="index.html"><img src="assets/images/logo.svg" alt="tutr" /> tutr docs terminal hub</a>
+          <div class="blink">CONFIG CHANNEL: ACTIVE</div>
+          <div class="theme-control">
+            <label for="theme-select">Theme</label>
+            <select id="theme-select" aria-label="Theme selector">
+              <option value="dark">Dark</option>
+              <option value="light">Light</option>
+            </select>
+          </div>
+        </div>
+        <nav class="nav">
+          <a href="index.html">Home</a>
+          <a href="getting-started.html">Getting Started</a>
+          <a href="usage.html">Usage</a>
+          <a class="active" href="configuration.html">Configuration</a>
+          <a href="development.html">Development</a>
+        </nav>
+      </header>
+
+      <main class="panel">
+        <h1>Configuration</h1>
+        <h2>Config file</h2>
+        <p><code>tutr</code> stores configuration at:</p>
+        <pre><code>~/.tutr/config.json</code></pre>
+        <p>Edit directly or use:</p>
+        <pre><code>tutr-cli configure</code></pre>
+
+        <h2>Environment overrides</h2>
+        <table>
+          <thead>
+            <tr><th>Variable</th><th>Description</th><th>Default</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>TUTR_MODEL</code></td><td>LLM model in LiteLLM format</td><td><code>gemini/gemini-3-flash-preview</code></td></tr>
+            <tr><td><code>GEMINI_API_KEY</code></td><td>Gemini API key</td><td>none</td></tr>
+            <tr><td><code>ANTHROPIC_API_KEY</code></td><td>Anthropic API key</td><td>none</td></tr>
+            <tr><td><code>OPENAI_API_KEY</code></td><td>OpenAI API key</td><td>none</td></tr>
+            <tr><td><code>OLLAMA_HOST</code></td><td>Ollama host URL override</td><td><code>http://localhost:11434</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2>Helpful runtime vars</h2>
+        <table>
+          <thead>
+            <tr><th>Variable</th><th>Purpose</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>TUTR_AUTOSTARTED</code></td><td>Prevent recursive auto-start in shell rc</td></tr>
+            <tr><td><code>TUTR_SKIP_AUTOSTART</code></td><td>Temporarily bypass auto-start logic</td></tr>
+            <tr><td><code>TUTR_ACTIVE</code></td><td>Indicates shell wrapper is active</td></tr>
+            <tr><td><code>TUTR_PROMPT_PREFIX</code></td><td>Customize wrapper prompt prefix</td></tr>
+          </tbody>
+        </table>
+      </main>
+
+      <footer class="footer">tutr docs</footer>
+    </div>
+    <script src="assets/scripts/site.js"></script>
+  </body>
+</html>

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>tutr Docs | Usage</title>
+    <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="assets/stylesheets/site.css" />
+  </head>
+  <body>
+    <div class="site-wrap">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <a class="brand" href="index.html"><img src="assets/images/logo.svg" alt="tutr" /> tutr docs terminal hub</a>
+          <div class="blink">USAGE CHANNEL: ACTIVE</div>
+          <div class="theme-control">
+            <label for="theme-select">Theme</label>
+            <select id="theme-select" aria-label="Theme selector">
+              <option value="dark">Dark</option>
+              <option value="light">Light</option>
+            </select>
+          </div>
+        </div>
+        <nav class="nav">
+          <a href="index.html">Home</a>
+          <a href="getting-started.html">Getting Started</a>
+          <a class="active" href="usage.html">Usage</a>
+          <a href="configuration.html">Configuration</a>
+          <a href="development.html">Development</a>
+        </nav>
+      </header>
+
+      <main class="panel">
+        <h1>Usage</h1>
+        <h2>Shell mode vs CLI mode</h2>
+        <table>
+          <thead>
+            <tr><th>Mode</th><th>Command</th><th>Best for</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Shell mode</td><td><code>tutr</code></td><td>Interactive terminal sessions with wrapper behavior and prompt context.</td></tr>
+            <tr><td>CLI mode</td><td><code>tutr-cli</code></td><td>One-shot command generation and configuration commands without wrapper shell behavior.</td></tr>
+          </tbody>
+        </table>
+        <p>Use <code>tutr</code> when you want ongoing in-terminal assistance. Use <code>tutr-cli</code> when you want direct command generation behavior or to run setup/configuration commands.</p>
+
+        <h2>Command shape</h2>
+        <pre><code>tutr &lt;command&gt; &lt;what you want to do&gt;</code></pre>
+
+        <h2>Examples</h2>
+        <pre><code>tutr git "create and switch to a new branch called testing"
+tutr sed "replace all instances of 'foo' with 'bar' in myfile.txt"
+tutr curl "http://example.com and display all request headers"</code></pre>
+
+        <h2>CLI flags</h2>
+        <table>
+          <thead>
+            <tr><th>Flag</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>-h</code>, <code>--help</code></td><td>Show help</td></tr>
+            <tr><td><code>-V</code>, <code>--version</code></td><td>Show version</td></tr>
+            <tr><td><code>-d</code>, <code>--debug</code></td><td>Enable debug logging</td></tr>
+            <tr><td><code>-e</code>, <code>--explain</code></td><td>Show explanation and source for the generated command</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Configure command</h2>
+        <pre><code>tutr-cli configure</code></pre>
+        <pre><code>tutr-cli configure --provider openai --model openai/gpt-4o --show-explanation
+tutr-cli configure --provider anthropic --model anthropic/claude-sonnet-4-6
+tutr-cli configure --provider ollama --ollama-host http://localhost:11434
+tutr-cli configure --clear-api-key</code></pre>
+      </main>
+
+      <footer class="footer">tutr docs</footer>
+    </div>
+    <script src="assets/scripts/site.js"></script>
+  </body>
+</html>

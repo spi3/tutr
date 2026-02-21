@@ -1,0 +1,400 @@
+:root {
+  --bg-1: #111827;
+  --bg-2: #0b1220;
+  --grid: rgba(121, 142, 176, 0.1);
+  --ink: #dbe6f7;
+  --muted: #9fb0c8;
+  --acid: #7ec8a0;
+  --pink: #d27fae;
+  --blue: #7ea7d8;
+  --panel: #182235;
+  --border: #6d8fb7;
+  --surface: #162033;
+  --surface-2: #131d2f;
+  --link: #a7c7ee;
+  --scanline-a: rgba(255, 255, 255, 0.02);
+  --scanline-b: rgba(0, 0, 0, 0.035);
+  --code-inline-bg: #1a2547;
+  --code-inline-border: #355089;
+  --code-inline-text: #eff6ff;
+  --code-block-bg: #050b1b;
+  --code-block-text: #d6ffe8;
+  --table-bg: #0f1630;
+}
+
+html[data-theme="light"] {
+  --bg-1: #e5edf9;
+  --bg-2: #eef4fb;
+  --grid: rgba(62, 84, 123, 0.08);
+  --ink: #16253d;
+  --muted: #4f6282;
+  --acid: #5ea986;
+  --pink: #cc78a6;
+  --blue: #5f86b7;
+  --panel: #f4f8ff;
+  --border: #5878a3;
+  --surface: #ffffff;
+  --surface-2: #f6f9ff;
+  --link: #365f9c;
+  --scanline-a: rgba(255, 255, 255, 0.02);
+  --scanline-b: rgba(0, 0, 0, 0.015);
+  --code-inline-bg: #f7f9ff;
+  --code-inline-border: #c8d5ff;
+  --code-inline-text: #091634;
+  --code-block-bg: #081033;
+  --code-block-text: #d9ffe7;
+  --table-bg: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Courier New", "Lucida Console", monospace;
+  color: var(--ink);
+  background:
+    linear-gradient(0deg, var(--grid) 1px, transparent 1px) 0 0 / 16px 16px,
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 16px 16px,
+    var(--bg-1);
+}
+
+body::after {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--scanline-a),
+    var(--scanline-a) 2px,
+    var(--scanline-b) 3px,
+    var(--scanline-b) 4px
+  );
+}
+
+.site-wrap {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.topbar {
+  border: 2px solid var(--border);
+  box-shadow: 0 0 0 1px rgba(126, 167, 216, 0.2), 4px 4px 0 rgba(109, 143, 183, 0.55);
+  background: var(--surface);
+  margin-bottom: 1rem;
+}
+
+.topbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 0.8rem;
+  border-bottom: 2px solid var(--border);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: bold;
+  color: var(--ink);
+  text-decoration: none;
+  text-transform: lowercase;
+  letter-spacing: 0.02em;
+}
+
+.brand::before {
+  content: "$";
+  color: var(--acid);
+  font-weight: 700;
+}
+
+.brand img {
+  width: 30px;
+  height: 30px;
+}
+
+.blink {
+  color: var(--pink);
+  font-size: 0.85rem;
+  animation: pulse 1.4s steps(2, end) infinite;
+}
+
+.theme-control {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: auto;
+}
+
+.theme-control label {
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+
+.theme-control select {
+  background: var(--surface-2);
+  color: var(--ink);
+  border: 1px solid var(--border);
+  padding: 0.2rem 0.3rem;
+  font-family: "Courier New", monospace;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  padding: 0.65rem 0.75rem 0.75rem;
+}
+
+.nav a {
+  text-decoration: none;
+  border: 1px solid var(--border);
+  color: var(--ink);
+  background: var(--surface);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.92rem;
+}
+
+.nav a::before {
+  content: "> ";
+  color: var(--acid);
+}
+
+.nav a.active {
+  background: var(--border);
+  color: #f6fbff;
+}
+
+.panel {
+  border: 2px solid var(--border);
+  background: linear-gradient(160deg, var(--surface) 0%, var(--surface-2) 46%, var(--panel) 100%);
+  box-shadow: 5px 5px 0 rgba(109, 143, 183, 0.5), 8px 8px 0 rgba(126, 200, 160, 0.25);
+  padding: 1rem;
+  margin-bottom: 1.4rem;
+  position: relative;
+}
+
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(126, 167, 216, 0.035), transparent 26%);
+}
+
+h1,
+h2,
+h3 {
+  color: var(--ink);
+  font-family: "Courier New", "Lucida Console", monospace;
+  text-shadow: 0 0 6px rgba(126, 167, 216, 0.12);
+}
+
+h1 {
+  margin-top: 0;
+  line-height: 1.05;
+}
+
+a {
+  color: var(--link);
+}
+
+.retro-strip {
+  margin: 0.7rem 0;
+  overflow: hidden;
+  white-space: nowrap;
+  border: 2px solid var(--border);
+  padding: 0.25rem 0.55rem;
+  background: var(--surface-2);
+  color: var(--acid);
+  animation: pulse 1.4s steps(2, end) infinite;
+}
+
+.status-row {
+  margin: 0.35rem 0 0.65rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.status-pill {
+  font-family: "Courier New", monospace;
+  font-size: 0.76rem;
+  border: 1px solid var(--border);
+  padding: 0.12rem 0.38rem;
+  background: var(--surface);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.btn {
+  display: inline-block;
+  text-decoration: none;
+  border: 2px solid var(--border);
+  box-shadow: 3px 3px 0 var(--border);
+  padding: 0.35rem 0.75rem;
+  color: var(--ink);
+  background: var(--surface);
+}
+
+.btn.primary {
+  background: var(--border);
+  color: #f6fbff;
+}
+
+.btn:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--border);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.8rem;
+}
+
+.card {
+  border: 2px solid var(--border);
+  background: var(--panel);
+  box-shadow: 3px 3px 0 rgba(126, 167, 216, 0.5);
+  padding: 0.85rem 0.9rem;
+}
+
+.card h2::before {
+  content: "~/ ";
+  color: var(--acid);
+}
+
+code,
+pre {
+  font-family: "Courier New", monospace;
+}
+
+code {
+  border: 1px solid var(--code-inline-border);
+  background: var(--code-inline-bg);
+  color: var(--code-inline-text);
+  padding: 0.08rem 0.24rem;
+}
+
+pre {
+  position: relative;
+  border: 2px solid var(--border);
+  background: var(--code-block-bg);
+  color: var(--code-block-text);
+  padding: 1.85rem 0.8rem 0.8rem;
+  overflow-x: auto;
+  box-shadow: inset 0 0 0 1px rgba(126, 167, 216, 0.24);
+}
+
+pre::before {
+  content: "terminal";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1.25rem;
+  border-bottom: 1px solid rgba(126, 167, 216, 0.4);
+  padding: 0.15rem 0.55rem;
+  font-size: 0.75rem;
+  color: var(--acid);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.copy-btn {
+  position: absolute;
+  top: 0.16rem;
+  right: 0.25rem;
+  z-index: 2;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: "Courier New", monospace;
+  font-size: 0.72rem;
+  line-height: 1;
+  padding: 0.18rem 0.45rem;
+  cursor: pointer;
+}
+
+.copy-btn:hover {
+  background: var(--surface-2);
+}
+
+.copy-btn.copied {
+  color: #f6fbff;
+  background: var(--border);
+}
+
+pre code {
+  border: none;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.8rem 0;
+}
+
+th,
+td {
+  border: 1px solid var(--border);
+  padding: 0.45rem;
+  background: var(--table-bg);
+  text-align: left;
+}
+
+.note {
+  border: 2px dashed var(--pink);
+  background: color-mix(in srgb, var(--surface) 86%, var(--pink) 14%);
+  padding: 0.6rem;
+}
+
+.footer {
+  margin: 1rem 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    color: var(--acid);
+  }
+  50% {
+    color: #b9dcca;
+  }
+}
+
+@media (max-width: 700px) {
+  .panel {
+    box-shadow: 4px 4px 0 var(--border), 7px 7px 0 var(--acid);
+  }
+
+  .topbar-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .theme-control {
+    margin-left: 0;
+  }
+}
