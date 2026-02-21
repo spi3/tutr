@@ -1,9 +1,14 @@
 """Unit tests for tutr.shell."""
 
+import os
+import threading
+import time
 from unittest.mock import patch
 
+from tutr.config import TutrConfig
 from tutr.shell import _is_auto_run_accepted, _should_ask_tutor
 from tutr.shell import _classify_shell, _detect_shell, _shell_candidates
+from tutr.shell.loop import _ask_tutor_with_cancel
 
 
 class TestShouldAskTutor:
@@ -71,3 +76,64 @@ class TestShellDetection:
         kind, executable = _detect_shell()
         assert kind == "powershell"
         assert executable.endswith("pwsh.exe")
+
+
+class TestCancelableTutorInvocation:
+    def test_escape_cancels_inflight_tutor_request(self):
+        stdin_r, stdin_w = os.pipe()
+        config = TutrConfig()
+
+        def _write_escape():
+            time.sleep(0.05)
+            os.write(stdin_w, b"\x1b")
+
+        def _slow_tutor(*_):
+            time.sleep(5)
+            return b"never", "echo no"
+
+        writer = threading.Thread(target=_write_escape)
+        writer.start()
+        with patch("tutr.shell.loop._ask_tutor", side_effect=_slow_tutor):
+            suggestion, command = _ask_tutor_with_cancel("bad", "output", config, stdin_r)
+        writer.join(timeout=1)
+        os.close(stdin_r)
+        os.close(stdin_w)
+
+        assert b"tutr canceled." in suggestion
+        assert command is None
+
+    def test_ctrl_c_cancels_inflight_tutor_request(self):
+        stdin_r, stdin_w = os.pipe()
+        config = TutrConfig()
+
+        def _write_ctrl_c():
+            time.sleep(0.05)
+            os.write(stdin_w, b"\x03")
+
+        def _slow_tutor(*_):
+            time.sleep(5)
+            return b"never", "echo no"
+
+        writer = threading.Thread(target=_write_ctrl_c)
+        writer.start()
+        with patch("tutr.shell.loop._ask_tutor", side_effect=_slow_tutor):
+            suggestion, command = _ask_tutor_with_cancel("bad", "output", config, stdin_r)
+        writer.join(timeout=1)
+        os.close(stdin_r)
+        os.close(stdin_w)
+
+        assert b"tutr canceled." in suggestion
+        assert command is None
+
+    def test_returns_tutor_response_when_not_canceled(self):
+        stdin_r, stdin_w = os.pipe()
+        config = TutrConfig()
+
+        with patch("tutr.shell.loop._ask_tutor", return_value=(b"hello", "echo hi")):
+            suggestion, command = _ask_tutor_with_cancel("bad", "output", config, stdin_r)
+
+        os.close(stdin_r)
+        os.close(stdin_w)
+
+        assert suggestion == b"hello"
+        assert command == "echo hi"
