@@ -19,6 +19,10 @@ PROVIDER_MODELS: dict[str, list[tuple[str, str]]] = {
         ("openai/gpt-4o", "GPT-4o"),
         ("openai/o3-mini", "o3-mini"),
     ],
+    "xai": [
+        ("xai/grok-3-mini", "Grok 3 Mini (recommended)"),
+        ("xai/grok-3", "Grok 3"),
+    ],
     "ollama": [
         ("ollama/llama3", "Llama 3"),
         ("ollama/mistral", "Mistral"),

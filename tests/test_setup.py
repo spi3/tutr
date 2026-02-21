@@ -78,7 +78,7 @@ class TestRunSetupGeminiWithApiKey:
     """Selecting gemini (choice 1) with a valid API key saves correct config."""
 
     def test_saves_provider_model_and_api_key(self):
-        # providers order: gemini=1, anthropic=2, openai=3, ollama=4
+        # providers order: gemini=1, anthropic=2, openai=3, xai=4, ollama=5
         # gemini models order: gemini-3-flash=1, gemini-2.0-flash=2, gemini-2.5-pro=3
         inputs = ["1", "1", "n"]  # provider=gemini, model=gemini-3-flash-preview
 
@@ -128,10 +128,10 @@ class TestRunSetupGeminiWithApiKey:
 
 
 class TestRunSetupOllamaSkipsApiKey:
-    """Selecting ollama (choice 4) must not prompt for an API key."""
+    """Selecting ollama (choice 5) must not prompt for an API key."""
 
     def test_getpass_not_called_for_ollama(self):
-        inputs = ["4", "", "1", "n"]  # provider=ollama, default host, model=llama3
+        inputs = ["5", "", "1", "n"]  # provider=ollama, default host, model=llama3
 
         with (
             patch("builtins.input", side_effect=inputs),
@@ -144,7 +144,7 @@ class TestRunSetupOllamaSkipsApiKey:
         mock_getpass.assert_not_called()
 
     def test_saved_config_has_no_api_key(self):
-        inputs = ["4", "", "1", "n"]
+        inputs = ["5", "", "1", "n"]
 
         with (
             patch("builtins.input", side_effect=inputs),
@@ -159,7 +159,7 @@ class TestRunSetupOllamaSkipsApiKey:
         assert result.api_key is None
 
     def test_correct_provider_and_model_saved(self):
-        inputs = ["4", "", "2", "n"]  # provider=ollama, default host, model=mistral
+        inputs = ["5", "", "2", "n"]  # provider=ollama, default host, model=mistral
 
         with (
             patch("builtins.input", side_effect=inputs),
@@ -227,6 +227,28 @@ class TestRunSetupEmptyApiKey:
 
         all_output = " ".join(str(c) for c in mock_print.call_args_list)
         assert "OPENAI_API_KEY" in all_output
+
+
+class TestRunSetupXaiWithApiKey:
+    def test_saves_provider_model_and_api_key(self):
+        inputs = ["4", "1", "n"]  # provider=xai, model=grok-3-mini
+
+        with (
+            patch("builtins.input", side_effect=inputs),
+            patch("builtins.print"),
+            patch("getpass.getpass", return_value="xai-key"),
+            patch("tutr.cli.wizard.save_config") as mock_save,
+        ):
+            result = run_setup()
+
+        expected = TutrConfig(
+            provider="xai",
+            model="xai/grok-3-mini",
+            api_key="xai-key",
+            show_explanation=False,
+        )
+        mock_save.assert_called_once_with(expected)
+        assert result == expected
 
 
 class TestRunSetupSaveConfigAlwaysCalled:

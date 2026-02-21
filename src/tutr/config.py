@@ -33,6 +33,7 @@ PROVIDERS: dict[str, ProviderInfo] = {
     "gemini": {"env_key": "GEMINI_API_KEY", "label": "Gemini"},
     "anthropic": {"env_key": "ANTHROPIC_API_KEY", "label": "Anthropic"},
     "openai": {"env_key": "OPENAI_API_KEY", "label": "OpenAI"},
+    "xai": {"env_key": "XAI_API_KEY", "label": "xAI"},
     "ollama": {"env_key": None, "label": "Ollama (local, no API key needed)"},
 }
 

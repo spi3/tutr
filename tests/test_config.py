@@ -139,6 +139,15 @@ class TestLoadConfig:
 
         assert result.api_key == "openai-test-key"
 
+    def test_xai_provider_api_key_override(self, config_dir, config_file, monkeypatch):
+        config_dir.mkdir(parents=True)
+        config_file.write_text(json.dumps({"provider": "xai"}))
+        monkeypatch.setenv("XAI_API_KEY", "xai-test-key")
+
+        result = load_config()
+
+        assert result.api_key == "xai-test-key"
+
     def test_no_provider_in_config_no_api_key_injected(self, config_dir, config_file, monkeypatch):
         config_dir.mkdir(parents=True)
         config_file.write_text(json.dumps({"model": "some-model"}))
@@ -259,6 +268,12 @@ class TestNeedsSetup:
     def test_false_when_openai_api_key_set(self, config_file, monkeypatch):
         self._clear_provider_env_keys(monkeypatch)
         monkeypatch.setenv("OPENAI_API_KEY", "some-key")
+
+        assert needs_setup() is False
+
+    def test_false_when_xai_api_key_set(self, config_file, monkeypatch):
+        self._clear_provider_env_keys(monkeypatch)
+        monkeypatch.setenv("XAI_API_KEY", "some-key")
 
         assert needs_setup() is False
 
