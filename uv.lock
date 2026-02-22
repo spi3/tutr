@@ -2685,7 +2685,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "litellm", specifier = ">=1.81.13" },
+    { name = "litellm", specifier = ">=1.81.13,<2.0" },
     { name = "pydantic", specifier = ">=2.12.5" },
 ]
 

@@ -51,3 +51,4 @@ When an agent discovers new information, conventions, or workflow guidance that 
 - When documenting shell rc auto-start for `tutr`, always include a recursion guard env var (for example `TUTR_AUTOSTARTED`) because the wrapper shell sources the user's rc file.
 - The shell wrapper launch config sets both `TUTR_ACTIVE=1` and `TUTR_AUTOSTARTED=1` for the child shell environment to prevent recursive auto-start.
 - Documentation site is static HTML/CSS in `docs/`; preview with `cd docs && python -m http.server 8000` and deploy `docs/` directly via `.github/workflows/docs.yml`.
+- Keep `litellm` constrained to a bounded major range in `pyproject.toml` (currently `>=1.81.13,<2.0`); review changelogs and tests before raising the major upper bound.

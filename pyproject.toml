@@ -9,7 +9,7 @@ authors = [
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
 dependencies = [
-    "litellm>=1.81.13",
+    "litellm>=1.81.13,<2.0",
     "pydantic>=2.12.5",
 ]
 keywords = ["cli", "terminal", "llm", "developer-tools", "ai"]
