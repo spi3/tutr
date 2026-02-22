@@ -27,6 +27,16 @@ def make_mock_response(content: str) -> MagicMock:
 MESSAGES = [{"role": "user", "content": "how do I list files?"}]
 
 
+@pytest.fixture(autouse=True)
+def mock_wait_indicator():
+    """Avoid TTY-dependent wait indicator behavior in llm tests."""
+    indicator = MagicMock()
+    indicator.start.return_value = None
+    indicator.stop.return_value = None
+    with patch("tutr.llm.build_llm_wait_indicator", return_value=indicator):
+        yield
+
+
 class TestQueryLlmValidResponse:
     """Tests for valid JSON responses from the LLM."""
 
