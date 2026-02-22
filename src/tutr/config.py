@@ -3,6 +3,7 @@
 import json
 import logging
 import os
+import stat
 from pathlib import Path
 from typing import Any
 
@@ -42,6 +43,8 @@ def load_config() -> TutrConfig:
     """Load config from file, with env var overrides."""
     raw_config: dict[str, Any] = {}
 
+    _ensure_config_dir_permissions(create=False)
+
     if CONFIG_FILE.exists():
         try:
             with open(CONFIG_FILE) as f:
@@ -79,12 +82,30 @@ def load_config() -> TutrConfig:
 
 def save_config(config: TutrConfig) -> None:
     """Save config to file."""
-    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    _ensure_config_dir_permissions(create=True)
     with open(CONFIG_FILE, "w") as f:
         json.dump(config.model_dump(exclude_none=True), f, indent=2)
     # Restrict permissions — file contains API key
     CONFIG_FILE.chmod(0o600)
     log.debug("saved config to %s", CONFIG_FILE)
+
+
+def _ensure_config_dir_permissions(*, create: bool) -> None:
+    """Ensure the config directory exists and is owner-only."""
+    if create:
+        CONFIG_DIR.mkdir(parents=True, exist_ok=True, mode=0o700)
+
+    if not CONFIG_DIR.exists():
+        return
+
+    current_mode = stat.S_IMODE(CONFIG_DIR.stat().st_mode)
+    if current_mode != 0o700:
+        CONFIG_DIR.chmod(0o700)
+        log.warning(
+            "updated config directory permissions for %s from %o to 700",
+            CONFIG_DIR,
+            current_mode,
+        )
 
 
 def needs_setup() -> bool:

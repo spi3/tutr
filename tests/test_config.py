@@ -194,6 +194,17 @@ class TestSaveConfig:
         save_config(TutrConfig(model="test/model"))
 
         assert config_dir.is_dir()
+        dir_mode = stat.S_IMODE(config_dir.stat().st_mode)
+        assert dir_mode == 0o700
+
+    def test_corrects_existing_config_dir_permissions(self, config_dir):
+        config_dir.mkdir(parents=True, mode=0o755)
+        config_dir.chmod(0o755)
+
+        save_config(TutrConfig(model="test/model"))
+
+        dir_mode = stat.S_IMODE(config_dir.stat().st_mode)
+        assert dir_mode == 0o700
 
     def test_writes_json_to_config_file(self, config_file):
         payload = TutrConfig(
