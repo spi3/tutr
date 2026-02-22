@@ -13,7 +13,7 @@ Examples:
   scripts/release.sh 1.2.3
 
 The script will:
-1. Bump version in pyproject.toml and src/tutr/__init__.py
+1. Bump version in pyproject.toml
 2. Commit and push the release commit
 3. Create and push an annotated git tag (vX.Y.Z)
 4. Create a GitHub release using gh with generated notes
@@ -48,15 +48,9 @@ if [[ -n "$(git status --porcelain)" ]]; then
 fi
 
 current_pyproject_version="$(sed -nE 's/^version = "([0-9]+\.[0-9]+\.[0-9]+)"$/\1/p' pyproject.toml)"
-current_init_version="$(sed -nE 's/^__version__ = "([0-9]+\.[0-9]+\.[0-9]+)"$/\1/p' src/tutr/__init__.py)"
 
-if [[ -z "$current_pyproject_version" || -z "$current_init_version" ]]; then
-  echo "Unable to read current version from pyproject.toml or src/tutr/__init__.py." >&2
-  exit 1
-fi
-
-if [[ "$current_pyproject_version" != "$current_init_version" ]]; then
-  echo "Version mismatch: pyproject.toml has $current_pyproject_version, src/tutr/__init__.py has $current_init_version." >&2
+if [[ -z "$current_pyproject_version" ]]; then
+  echo "Unable to read current version from pyproject.toml." >&2
   exit 1
 fi
 
@@ -113,11 +107,10 @@ fi
 branch="$(git rev-parse --abbrev-ref HEAD)"
 
 sed -E -i "s/^version = \"[0-9]+\.[0-9]+\.[0-9]+\"$/version = \"${new_version}\"/" pyproject.toml
-sed -E -i "s/^__version__ = \"[0-9]+\.[0-9]+\.[0-9]+\"$/__version__ = \"${new_version}\"/" src/tutr/__init__.py
 
 uv run poe check
 
-git add pyproject.toml src/tutr/__init__.py uv.lock
+git add pyproject.toml uv.lock
 git commit -m "release: ${tag}"
 git push origin "$branch"
 

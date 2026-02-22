@@ -33,7 +33,7 @@ Python CLI tool using `uv` (with `uv_build` backend) and `src/` layout.
   - `wizard.py` contains interactive setup/config flows (`run_setup`, `run_configure`).
 - **Interactive shell wrapper**: `src/tutr/shell/` package (`[project.scripts] shell` via `tutr.shell:entrypoint`) contains the PTY loop (`loop.py`), shell detection/launch config (`detection.py`), startup hook writers (`hooks.py`), and tutor prompt logic (`tutor.py`). `TUTR_SHELL` can override detection.
 - **`__main__.py`**: enables `python -m tutr` invocation.
-- **Version**: keep `project.version` in `pyproject.toml` and `__version__` in `src/tutr/__init__.py` in sync.
+- **Version**: `project.version` in `pyproject.toml` is the single source of truth; `src/tutr/__init__.py` derives `__version__` from installed package metadata.
 
 ## Self-Refinement
 
