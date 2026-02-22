@@ -11,23 +11,9 @@ from tutr.config import DEFAULT_MODEL, TutrConfig, load_config, needs_setup, sav
 
 
 @pytest.fixture(autouse=True)
-def isolated_config(tmp_path, monkeypatch):
-    """Redirect CONFIG_DIR and CONFIG_FILE to a temp directory for every test."""
-    config_dir = tmp_path / ".tutr"
-    config_file = config_dir / "config.json"
-    monkeypatch.setattr(config_module, "CONFIG_DIR", config_dir)
-    monkeypatch.setattr(config_module, "CONFIG_FILE", config_file)
-    return config_dir, config_file
-
-
-@pytest.fixture()
-def config_dir(isolated_config):
-    return isolated_config[0]
-
-
-@pytest.fixture()
-def config_file(isolated_config):
-    return isolated_config[1]
+def isolated_config(tutr_config_paths):
+    """Apply shared config path isolation to every test in this module."""
+    return tutr_config_paths
 
 
 # ---------------------------------------------------------------------------

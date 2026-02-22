@@ -19,11 +19,9 @@ from tutr.update_check import (
 
 
 @pytest.fixture(autouse=True)
-def isolated_update_cache(tmp_path, monkeypatch):
-    cache_file = tmp_path / "update-check.json"
-    monkeypatch.setattr("tutr.update_check.CONFIG_DIR", tmp_path)
-    monkeypatch.setattr("tutr.update_check.UPDATE_CHECK_CACHE_FILE", cache_file)
-    return cache_file
+def isolated_update_cache(isolated_update_cache_file):
+    """Apply shared update-check cache isolation to every test in this module."""
+    return isolated_update_cache_file
 
 
 class _TtyStringIO(io.StringIO):
