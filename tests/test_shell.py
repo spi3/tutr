@@ -191,6 +191,29 @@ class TestAskTutorMessageFormatting:
 
         mock_run_query.assert_called_once_with(expected_query, config, cmd="git")
 
+    def test_blocks_unsafe_suggestion_by_default(self):
+        config = TutrConfig(show_explanation=False)
+        result = MagicMock(command="rm -rf /tmp/test", explanation="", source=None)
+        with patch("tutr.shell.shell.run_query", return_value=result):
+            msg, command = _ask_tutor("bad cmd", "error output", config)
+
+        text = msg.decode()
+        assert "blocked a potentially dangerous suggestion" in text
+        assert "rm -rf style" in text
+        assert command is None
+
+    @patch.dict("os.environ", {"TUTR_ALLOW_UNSAFE": "1"}, clear=False)
+    def test_unsafe_override_allows_suggestion(self):
+        config = TutrConfig(show_explanation=False)
+        result = MagicMock(command="rm -rf /tmp/test", explanation="", source=None)
+        with patch("tutr.shell.shell.run_query", return_value=result):
+            msg, command = _ask_tutor("bad cmd", "error output", config)
+
+        text = msg.decode()
+        assert "unsafe override enabled" in text
+        assert "rm -rf /tmp/test" in text
+        assert command == "rm -rf /tmp/test"
+
 
 class TestShellStatusLine:
     @patch.dict("os.environ", {"TERM": "xterm-256color"}, clear=True)

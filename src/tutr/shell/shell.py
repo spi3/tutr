@@ -6,6 +6,7 @@ import shlex
 from tutr.cli.wizard import run_setup
 from tutr.config import TutrConfig, load_config, needs_setup
 from tutr.constants import BOLD, CYAN, RED, RESET
+from tutr.safety import assess_command_safety, is_unsafe_override_enabled
 from tutr.tutr import run_query
 
 
@@ -55,6 +56,15 @@ def _ask_tutor(cmd: str, output: str, config: TutrConfig) -> tuple[bytes, str | 
         query += f"\n\nTerminal output:\n{output}"
     try:
         result = run_query(query, config, cmd=failed_cmd_name)
+        safety = assess_command_safety(result.command)
+        allow_unsafe = is_unsafe_override_enabled()
+        if not safety.is_safe and not allow_unsafe:
+            msg = "\r\ntutr blocked a potentially dangerous suggestion:\r\n"
+            for reason in safety.reasons:
+                msg += f"  - {reason}\r\n"
+            msg += "Set TUTR_ALLOW_UNSAFE=1 to override.\r\n"
+            return msg.encode(), None
+
         use_color = _supports_color()
         if use_color:
             suggestion_header = f"{BOLD}tutr suggests:{RESET}"
@@ -62,7 +72,13 @@ def _ask_tutor(cmd: str, output: str, config: TutrConfig) -> tuple[bytes, str | 
         else:
             suggestion_header = "tutr suggests:"
             suggestion_command = f"$ {result.command}"
-        msg = f"\r\n{suggestion_header}\r\n  {suggestion_command}\r\n"
+        msg = ""
+        if not safety.is_safe and allow_unsafe:
+            warning_text = "tutr warning: unsafe override enabled for a risky suggestion"
+            if use_color:
+                warning_text = f"{RED}{warning_text}{RESET}"
+            msg += f"\r\n{warning_text}\r\n"
+        msg += f"\r\n{suggestion_header}\r\n  {suggestion_command}\r\n"
         if config.show_explanation:
             if result.explanation.strip():
                 msg += f"  {result.explanation}\r\n"

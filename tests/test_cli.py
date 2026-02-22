@@ -143,6 +143,24 @@ class TestMainLlmError:
         err = capsys.readouterr().err
         assert "Query is too long" in err
 
+    def test_blocks_unsafe_suggestion_by_default(self, capsys):
+        result = _make_llm_result("rm -rf ~/tmp")
+        with _query_patches(query_llm=MagicMock(return_value=result)):
+            assert main(["delete temp files"]) == 1
+
+        err = capsys.readouterr().err
+        assert "potentially dangerous" in err
+        assert "rm -rf style" in err
+
+    def test_allow_unsafe_flag_displays_unsafe_suggestion(self, capsys):
+        result = _make_llm_result("rm -rf ~/tmp")
+        with _query_patches(query_llm=MagicMock(return_value=result)):
+            assert main(["--allow-unsafe", "delete temp files"]) == 0
+
+        out_err = capsys.readouterr()
+        assert "matched dangerous-pattern checks" in out_err.err
+        assert "rm -rf ~/tmp" in out_err.out
+
 
 class TestMainArgparse:
     def test_version_flag_raises_system_exit(self):
