@@ -4,12 +4,15 @@ import os
 import sys
 import threading
 import time
+from collections.abc import Iterator
+from contextlib import ExitStack
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 from tutr.config import TutrConfig
+from tutr.models import ShellLaunchConfig
 from tutr.shell.detection import (
     _build_shell_launch_config,
     _classify_shell,
@@ -18,7 +21,7 @@ from tutr.shell.detection import (
     _shell_candidates,
 )
 from tutr.shell.hooks import write_bash_rcfile, write_powershell_profile, write_zsh_rcdir
-from tutr.shell.loop import _ask_tutor_with_cancel
+from tutr.shell.loop import _ask_tutor_with_cancel, shell_loop
 from tutr.shell.shell import (
     _ask_tutor,
     _is_auto_run_accepted,
@@ -443,3 +446,114 @@ class TestShellLaunchEnv:
             "/tmp/tutr_profile.ps1",
         ]
         assert launch.cleanup_paths == ["/tmp/tutr_profile.ps1"]
+
+
+class TestShellLoop:
+    def test_shell_loop_strips_markers_resets_context_and_cleans_up(self):
+        marker_one = b"\033]7770;1;first bad\007"
+        marker_two = b"\033]7770;2;second bad\007"
+        pty_reads: Iterator[bytes] = iter(
+            [
+                b"before-one\n",
+                marker_one + b"middle\n",
+                marker_two + b"tail\n",
+            ]
+        )
+        writes: list[tuple[int, bytes]] = []
+        tutor_calls: list[tuple[str, str]] = []
+        removed_files: list[str] = []
+        removed_dirs: list[str] = []
+
+        launch = ShellLaunchConfig(
+            kind="bash",
+            executable="/bin/bash",
+            argv=["/bin/bash", "-i"],
+            env={"PATH": "/usr/bin"},
+            cleanup_paths=["/tmp/tutr-test-file", "/tmp/tutr-test-dir"],
+        )
+        fake_stdin = MagicMock()
+        fake_stdin.isatty.return_value = True
+        fake_stdin.fileno.return_value = 10
+        fake_stdout = MagicMock()
+        fake_stdout.fileno.return_value = 11
+        fake_select = [
+            ([20], [], []),
+            ([20], [], []),
+            ([20], [], []),
+            ValueError("done"),
+        ]
+
+        def _fake_read(fd: int, _size: int) -> bytes:
+            if fd == 20:
+                return next(pty_reads)
+            raise AssertionError(f"unexpected os.read fd={fd}")
+
+        def _fake_write(fd: int, data: bytes) -> int:
+            writes.append((fd, data))
+            return len(data)
+
+        def _fake_ask(command: str, output: str, *_: object) -> tuple[bytes, str | None]:
+            tutor_calls.append((command, output))
+            return b"hint\r\n", None
+
+        with ExitStack() as stack:
+            stack.enter_context(
+                patch("tutr.shell.loop.load_shell_config", return_value=TutrConfig())
+            )
+            stack.enter_context(
+                patch("tutr.shell.loop._build_shell_launch_config", return_value=launch)
+            )
+            stack.enter_context(patch("tutr.shell.loop.sys.stdin", fake_stdin))
+            stack.enter_context(patch("tutr.shell.loop.sys.stdout", fake_stdout))
+            stack.enter_context(patch("tutr.shell.loop._winsize", return_value=(24, 80, 0, 0)))
+            stack.enter_context(patch("tutr.shell.loop._set_winsize"))
+            stack.enter_context(patch("tutr.shell.loop.os.openpty", return_value=(20, 21)))
+            stack.enter_context(patch("tutr.shell.loop.os.fork", return_value=123))
+            stack.enter_context(patch("tutr.shell.loop.os.close"))
+            stack.enter_context(patch("tutr.shell.loop.signal.signal"))
+            stack.enter_context(
+                patch(
+                    "tutr.shell.loop.termios.tcgetattr",
+                    return_value=[0, 0, 0, 0, 0, 0],
+                )
+            )
+            stack.enter_context(patch("tutr.shell.loop.tty.setraw"))
+            stack.enter_context(patch("tutr.shell.loop.select.select", side_effect=fake_select))
+            stack.enter_context(patch("tutr.shell.loop.os.read", side_effect=_fake_read))
+            stack.enter_context(patch("tutr.shell.loop.os.write", side_effect=_fake_write))
+            stack.enter_context(
+                patch("tutr.shell.loop._shell_status_line", return_value=b"status\r\n")
+            )
+            stack.enter_context(patch("tutr.shell.loop._should_ask_tutor", return_value=True))
+            stack.enter_context(
+                patch("tutr.shell.loop._ask_tutor_with_cancel", side_effect=_fake_ask)
+            )
+            stack.enter_context(
+                patch(
+                    "tutr.shell.loop.os.path.isdir",
+                    side_effect=lambda path: path.endswith("-dir"),
+                )
+            )
+            stack.enter_context(
+                patch("tutr.shell.loop.os.unlink", side_effect=removed_files.append)
+            )
+            stack.enter_context(
+                patch("tutr.shell.loop.shutil.rmtree", side_effect=removed_dirs.append)
+            )
+            stack.enter_context(patch("tutr.shell.loop.termios.tcsetattr"))
+            stack.enter_context(patch("tutr.shell.loop.os.waitpid", return_value=(123, 0)))
+            stack.enter_context(patch("tutr.shell.loop.os.waitstatus_to_exitcode", return_value=0))
+            exit_code = shell_loop()
+
+        assert exit_code == 0
+        assert tutor_calls == [("first bad", "before-one\n"), ("second bad", "middle\n")]
+
+        visible_output = b"".join(data for fd, data in writes if fd == 11)
+        assert marker_one not in visible_output
+        assert marker_two not in visible_output
+        assert b"before-one\n" in visible_output
+        assert b"middle\n" in visible_output
+        assert b"tail\n" in visible_output
+
+        assert removed_files == ["/tmp/tutr-test-file"]
+        assert removed_dirs == ["/tmp/tutr-test-dir"]
