@@ -217,6 +217,13 @@ class TestConfigureCommand:
         with _configure_patches(load_config=MagicMock(return_value=TutrConfig())):
             assert main(["configure", "--ollama-host", "x", "--clear-ollama-host"]) == 2
 
+    def test_api_key_flag_prints_security_warning(self, capsys):
+        with _configure_patches(load_config=MagicMock(return_value=TutrConfig())):
+            assert main(["configure", "--provider", "openai", "--api-key", "secret"]) == 0
+
+        err = capsys.readouterr().err
+        assert "--api-key may leak secrets via shell history and process lists" in err
+
 
 class TestEntrypoint:
     def test_entrypoint_raises_system_exit(self):

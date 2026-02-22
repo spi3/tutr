@@ -71,6 +71,7 @@ tutr curl "http://example.com and display all request headers"</code></pre>
 tutr-cli configure --provider anthropic --model anthropic/claude-sonnet-4-6
 tutr-cli configure --provider ollama --ollama-host http://localhost:11434
 tutr-cli configure --clear-api-key</code></pre>
+        <p>Security note: avoid passing secrets with <code>--api-key</code> because command-line arguments can leak through shell history and process listings. Prefer interactive <code>tutr-cli configure</code> prompts or provider API key environment variables.</p>
       </main>
 
       <footer class="footer">tutr docs</footer>

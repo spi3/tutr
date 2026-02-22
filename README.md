@@ -161,6 +161,8 @@ tutr-cli configure --provider ollama --ollama-host http://localhost:11434
 tutr-cli configure --clear-api-key
 ```
 
+Security note: avoid passing secrets via `--api-key` because CLI args can be exposed in shell history and process listings. Prefer interactive `tutr-cli configure` prompts or provider API key environment variables.
+
 ## Configuration
 
 Config is stored in `~/.tutr/config.json`. Environment variables override the config file.

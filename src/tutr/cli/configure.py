@@ -9,6 +9,11 @@ from tutr.cli.wizard import run_configure
 from tutr.config import CONFIG_FILE, PROVIDERS, TutrConfig, load_config, needs_setup
 from tutr.update_check import notify_if_update_available_async
 
+API_KEY_CLI_WARNING = (
+    "Warning: --api-key may leak secrets via shell history and process lists. "
+    "Prefer interactive `tutr-cli configure` prompts or provider API key environment variables."
+)
+
 
 def build_parser() -> argparse.ArgumentParser:
     """Build parser for the configure command."""
@@ -28,7 +33,10 @@ def build_parser() -> argparse.ArgumentParser:
         help="LLM provider to use",
     )
     parser.add_argument("--model", help="Model ID in LiteLLM format (example: openai/gpt-4o)")
-    parser.add_argument("--api-key", help="Provider API key to store in config")
+    parser.add_argument(
+        "--api-key",
+        help="Provider API key to store in config (not recommended; may leak via shell history/process list)",
+    )
     parser.add_argument(
         "--clear-api-key",
         action="store_true",
@@ -77,6 +85,8 @@ def run(argv: list[str]) -> int:
             file=sys.stderr,
         )
         return 2
+    if args.api_key is not None:
+        print(API_KEY_CLI_WARNING, file=sys.stderr)
 
     show_explanation: bool | None = None
     if args.show_explanation:
