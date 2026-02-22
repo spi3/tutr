@@ -1,0 +1,36 @@
+name: Feature request
+description: Propose an improvement to tutr.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the user problem first, then the proposed solution.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What user pain-point does this solve?
+      placeholder: I cannot...
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What should change and how should it behave?
+      placeholder: Add support for...
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any alternatives or workarounds you evaluated.
+  - type: textarea
+    id: impact
+    attributes:
+      label: Expected impact
+      description: Who benefits and what tradeoffs should we consider?
