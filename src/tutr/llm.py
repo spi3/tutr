@@ -6,12 +6,12 @@ import logging
 import litellm
 from pydantic import ValidationError
 
-log = logging.getLogger(__name__)
-
 from tutr.config import DEFAULT_OLLAMA_HOST, TutrConfig
 from tutr.models import CommandResponse
 from tutr.prompt import LLMMessage
 from tutr.wait_indicator import build_llm_wait_indicator
+
+log = logging.getLogger(__name__)
 
 # Suppress litellm's noisy logging
 litellm.suppress_debug_info = True
