@@ -1,6 +1,8 @@
 """Unit tests for tutr.models."""
 
 import pytest
+from hypothesis import given
+from hypothesis import strategies as st
 from pydantic import ValidationError
 
 from tutr.models import CommandResponse
@@ -99,3 +101,26 @@ class TestCommandResponse:
         data = {"command": "echo hello"}
         response = CommandResponse(**data)
         assert response.command == "echo hello"
+
+    @given(st.text())
+    def test_property_any_string_command_is_preserved(self, command: str):
+        """Property-based test: any string command round-trips as-is."""
+        response = CommandResponse(command=command)
+        assert response.command == command
+        assert response.model_dump()["command"] == command
+
+    @given(
+        st.one_of(
+            st.none(),
+            st.booleans(),
+            st.integers(),
+            st.floats(allow_nan=False),
+            st.lists(st.integers()),
+            st.tuples(st.integers()),
+            st.dictionaries(st.text(min_size=1, max_size=8), st.integers()),
+        )
+    )
+    def test_property_non_string_command_rejected(self, value: object):
+        """Property-based test: non-string command values fail validation."""
+        with pytest.raises(ValidationError):
+            CommandResponse(command=value)  # type: ignore[arg-type]
