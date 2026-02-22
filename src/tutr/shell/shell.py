@@ -1,11 +1,12 @@
 """Tutor suggestion helpers for shell command failures."""
 
 import os
+import shlex
 
 from tutr.config import TutrConfig, load_config, needs_setup
 from tutr.constants import BOLD, CYAN, RED, RESET
 from tutr.cli.wizard import run_setup
-from tutr.tutr import run
+from tutr.tutr import run_query
 
 
 def load_shell_config() -> TutrConfig:
@@ -41,11 +42,19 @@ def _shell_status_line() -> bytes:
 
 def _ask_tutor(cmd: str, output: str, config: TutrConfig) -> tuple[bytes, str | None]:
     """Query tutr with a failed command and return display text and command."""
+    failed_cmd_name: str | None = None
+    try:
+        split_cmd = shlex.split(cmd)
+    except ValueError:
+        split_cmd = []
+    if split_cmd:
+        failed_cmd_name = split_cmd[0]
+
     query = f"fix this command: {cmd}"
     if output:
         query += f"\n\nTerminal output:\n{output}"
     try:
-        result = run(query.split(), config)
+        result = run_query(query, config, cmd=failed_cmd_name)
         use_color = _supports_color()
         if use_color:
             suggestion_header = f"{BOLD}tutr suggests:{RESET}"
