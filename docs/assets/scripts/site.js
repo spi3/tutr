@@ -1,4 +1,13 @@
 (function () {
+  var SHARED_LINKS = {
+    github: {
+      label: "GitHub",
+      href: "https://github.com/spi3/tutr",
+      target: "_blank",
+      rel: "noopener noreferrer",
+    },
+  };
+
   function applyTheme() {
     var root = document.documentElement;
     var select = document.getElementById("theme-select");
@@ -82,6 +91,25 @@
     });
   }
 
+  function addSharedNavLinks() {
+    var navs = document.querySelectorAll(".nav");
+    navs.forEach(function (nav) {
+      var existing = nav.querySelector('a[data-shared-link="github"]');
+      if (existing) {
+        return;
+      }
+
+      var link = document.createElement("a");
+      link.href = SHARED_LINKS.github.href;
+      link.target = SHARED_LINKS.github.target;
+      link.rel = SHARED_LINKS.github.rel;
+      link.textContent = SHARED_LINKS.github.label;
+      link.setAttribute("data-shared-link", "github");
+      nav.appendChild(link);
+    });
+  }
+
   applyTheme();
+  addSharedNavLinks();
   addCopyButtons();
 })();
