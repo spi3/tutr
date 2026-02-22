@@ -14,6 +14,7 @@ from tutr.shell.detection import (
     _build_shell_launch_config,
     _classify_shell,
     _detect_shell,
+    _resolve_executable,
     _shell_candidates,
 )
 from tutr.shell.hooks import write_bash_rcfile, write_powershell_profile, write_zsh_rcdir
@@ -177,6 +178,42 @@ class TestShellDetection:
         kind, executable = _detect_shell()
         assert kind == "powershell"
         assert executable.endswith("pwsh.exe")
+
+
+class TestResolveExecutable:
+    def test_pathlike_candidate_returns_when_executable(self, tmp_path: Path):
+        executable = tmp_path / "tool"
+        executable.write_text("#!/bin/sh\n", encoding="utf-8")
+        executable.chmod(0o755)
+
+        assert _resolve_executable(str(executable)) == str(executable)
+
+    def test_relative_pathlike_candidate_returns_when_executable(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        executable = tmp_path / "tool"
+        executable.write_text("#!/bin/sh\n", encoding="utf-8")
+        executable.chmod(0o755)
+        monkeypatch.chdir(tmp_path)
+
+        assert _resolve_executable(f".{os.path.sep}tool") == f".{os.path.sep}tool"
+
+    def test_pathlike_candidate_returns_none_when_not_executable(self, tmp_path: Path):
+        not_executable = tmp_path / "tool"
+        not_executable.write_text("echo hi\n", encoding="utf-8")
+        not_executable.chmod(0o644)
+
+        assert _resolve_executable(str(not_executable)) is None
+
+    def test_bare_command_uses_shutil_which(self):
+        with patch("tutr.shell.detection.shutil.which", return_value="/usr/bin/bash") as mock_which:
+            assert _resolve_executable("bash") == "/usr/bin/bash"
+
+        mock_which.assert_called_once_with("bash")
+
+    def test_bare_command_returns_none_when_which_fails(self):
+        with patch("tutr.shell.detection.shutil.which", return_value=None):
+            assert _resolve_executable("does-not-exist") is None
 
 
 class TestCancelableTutorInvocation:
