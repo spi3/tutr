@@ -151,6 +151,25 @@ class TestNotifyIfUpdateAvailable:
 
         mock_run.assert_not_called()
 
+    def test_prints_failure_message_when_update_command_returns_nonzero(self):
+        stream = _TtyStringIO()
+        stdin = _TtyStringIO("y\n")
+        with patch("tutr.update_check.sys.stdin", stdin):
+            with patch("tutr.update_check._is_update_check_due", return_value=True):
+                with patch("tutr.update_check._record_update_check_epoch"):
+                    with patch("tutr.update_check._fetch_latest_version", return_value="0.2.0"):
+                        with patch(
+                            "tutr.update_check._update_command",
+                            return_value=["uv", "tool", "upgrade", "tutr"],
+                        ):
+                            with patch("tutr.update_check.subprocess.run") as mock_run:
+                                mock_run.return_value.returncode = 7
+                                notify_if_update_available("0.1.2", stream=stream)
+
+        output = stream.getvalue()
+        assert "Update command failed with exit code 7." in output
+        assert "Run manually: uv tool upgrade tutr" in output
+
     def test_prints_nothing_when_versions_match(self):
         stream = io.StringIO()
         with patch("tutr.update_check._is_update_check_due", return_value=True):
