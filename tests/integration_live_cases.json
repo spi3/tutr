@@ -1,0 +1,220 @@
+[
+  {
+    "input": "print INTEGRATION_OK",
+    "expected_any_of": [
+      {
+        "command_any_of": ["echo", "printf"],
+        "required_substrings": ["INTEGRATION_OK"],
+        "command_position": "first"
+      },
+      {
+        "command_any_of": ["print"],
+        "required_substrings": ["INTEGRATION_OK"],
+        "command_position": "first"
+      }
+    ],
+    "quality_hint": "should print INTEGRATION_OK directly"
+  },
+  {
+    "input": "show the present working directory",
+    "expected_any_of": [
+      {
+        "command_any_of": ["pwd"],
+        "command_position": "first"
+      },
+      {
+        "command_any_of": ["python", "python3"],
+        "required_substrings": ["os.getcwd"],
+        "command_position": "first"
+      },
+      {
+        "command_any_of": ["echo", "printf", "print"],
+        "required_substrings": ["PWD"],
+        "command_position": "first"
+      }
+    ],
+    "quality_hint": "should use pwd (or a direct equivalent)"
+  },
+  {
+    "input": "show the absolute path of the current working directory",
+    "expected_any_of": [
+      {
+        "command_any_of": ["pwd"],
+        "command_position": "first"
+      },
+      {
+        "command_any_of": ["python", "python3"],
+        "required_substrings": ["os.getcwd"],
+        "command_position": "first"
+      },
+      {
+        "command_any_of": ["echo", "printf", "print"],
+        "required_substrings": ["PWD"],
+        "command_position": "first"
+      }
+    ],
+    "quality_hint": "should use pwd (or a direct equivalent)"
+  },
+  {
+    "input": "list all files including hidden ones in long format",
+    "expected_any_of": [
+      {
+        "command_any_of": ["ls"],
+        "required_short_flags": ["a", "l"],
+        "command_position": "first"
+      },
+      {
+        "command_any_of": ["ls"],
+        "required_long_flags": ["all"],
+        "command_position": "first"
+      }
+    ],
+    "quality_hint": "should include ls with hidden-file flag (-a)"
+  },
+  {
+    "input": "count how many files are in the current directory",
+    "expected_any_of": [
+      {
+        "command_any_of": ["ls", "find", "fd"],
+        "required_substrings": ["| wc -l"],
+        "command_position": "first"
+      }
+    ],
+    "quality_hint": "should use a count pipeline ending in wc -l"
+  },
+  {
+    "input": "show my current username",
+    "expected_any_of": [
+      {
+        "command_any_of": ["whoami"],
+        "command_position": "first"
+      },
+      {
+        "command_any_of": ["id"],
+        "required_short_flags": ["u", "n"],
+        "command_position": "first"
+      }
+    ],
+    "quality_hint": "should use whoami or id -un"
+  },
+  {
+    "input": "show the current date",
+    "expected_any_of": [
+      {
+        "command_any_of": ["date"],
+        "command_position": "first"
+      }
+    ],
+    "quality_hint": "should use date"
+  },
+  {
+    "input": "list only directories in the current directory",
+    "expected_any_of": [
+      {
+        "command_any_of": ["find"],
+        "required_tokens": ["-type", "d"],
+        "command_position": "first"
+      },
+      {
+        "command_any_of": ["ls"],
+        "required_short_flags": ["d"],
+        "required_substrings": ["*/"],
+        "command_position": "first"
+      }
+    ],
+    "quality_hint": "should use find -type d or ls -d */"
+  },
+  {
+    "input": "print the number of running processes",
+    "expected_any_of": [
+      {
+        "command_any_of": ["ps", "pgrep"],
+        "required_substrings": ["| wc -l"],
+        "command_position": "first"
+      }
+    ],
+    "quality_hint": "should count processes with ps/pgrep and wc -l"
+  },
+  {
+    "input": "show file permissions for README.md",
+    "expected_any_of": [
+      {
+        "command_any_of": ["ls"],
+        "required_short_flags": ["l"],
+        "required_tokens": ["README.md"],
+        "command_position": "first"
+      },
+      {
+        "command_any_of": ["stat"],
+        "required_tokens": ["README.md"],
+        "command_position": "first"
+      }
+    ],
+    "quality_hint": "should inspect file metadata via ls -l or stat"
+  },
+  {
+    "input": "show the human-readable total size of the current directory",
+    "expected_any_of": [
+      {
+        "command_any_of": ["du"],
+        "required_short_flags": ["s", "h"],
+        "command_position": "first"
+      }
+    ],
+    "quality_hint": "should summarize directory size with du -sh"
+  },
+  {
+    "input": "show the groups for the current user",
+    "expected_any_of": [
+      {
+        "command_any_of": ["groups"],
+        "command_position": "first"
+      },
+      {
+        "command_any_of": ["id"],
+        "required_short_flags": ["G", "n"],
+        "command_position": "first"
+      }
+    ],
+    "quality_hint": "should use groups or id -Gn"
+  },
+  {
+    "input": "resolve the canonical absolute path of README.md",
+    "expected_any_of": [
+      {
+        "command_any_of": ["realpath"],
+        "required_tokens": ["README.md"],
+        "command_position": "first"
+      },
+      {
+        "command_any_of": ["readlink"],
+        "required_short_flags": ["f"],
+        "required_tokens": ["README.md"],
+        "command_position": "first"
+      },
+      {
+        "command_any_of": ["python", "python3"],
+        "required_substrings": ["os.path.realpath", "README.md"],
+        "command_position": "first"
+      }
+    ],
+    "quality_hint": "should use realpath/readlink -f or an equivalent direct path resolver"
+  },
+  {
+    "input": "list symbolic links in the current directory",
+    "expected_any_of": [
+      {
+        "command_any_of": ["find"],
+        "required_tokens": ["-type", "l"],
+        "command_position": "first"
+      },
+      {
+        "command_any_of": ["ls"],
+        "required_short_flags": ["l"],
+        "required_substrings": ["| grep"],
+        "command_position": "first"
+      }
+    ],
+    "quality_hint": "should filter symlinks using find -type l or ls -l with grep"
+  }
+]

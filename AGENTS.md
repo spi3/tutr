@@ -16,6 +16,7 @@ uv run poe publish_pypi      # Upload dist/* to PyPI
 uv run ruff check .  # Lint
 uv run ruff format . # Format
 uv run mypy          # Type-check
+scripts/run_integration_tests.sh [--model <provider/model>] [--provider-key-env <ENV_KEY>]  # Run live integration tests (defaults to saved config)
 cd docs && python -m http.server 8000  # Preview docs site locally
 uv add <pkg>         # Add a dependency
 uv build             # Build wheel + sdist into dist/
@@ -45,7 +46,10 @@ When an agent discovers new information, conventions, or workflow guidance that 
 - Use `uv run poe check` as the default pre-merge validation command; it runs ruff lint, ruff format check, mypy, pip-audit, and pytest.
 - Keep `mypy` in strict mode for `src/`; for `tests/`, use `tool.mypy.overrides` to relax `disallow_untyped_defs`/`disallow_untyped_calls` when needed instead of weakening global strictness.
 - The repository pre-commit hook lives at `.githooks/pre-commit` and runs `uv run poe check`; enable it locally with `git config core.hooksPath .githooks`.
-- Live integration tests are opt-in and require env vars: run with `TUTR_RUN_INTEGRATION=1 uv run pytest -q -m integration` and set `TUTR_INTEGRATION_MODEL` (or `TUTR_MODEL`) plus either `TUTR_INTEGRATION_API_KEY` or the provider-specific API key env var.
+- Live integration tests are opt-in: run with `TUTR_RUN_INTEGRATION=1 uv run pytest -q -m integration`; if no integration override env vars are set, tests use saved `tutr` config, otherwise `TUTR_INTEGRATION_MODEL`/`TUTR_MODEL` and `TUTR_INTEGRATION_API_KEY` (or provider env key) override.
+- Live integration test pacing is configurable with `TUTR_INTEGRATION_WAIT_SECONDS` (default `0`) to insert a delay between live test calls and reduce provider throttling/rate-limit risk.
+- Live integration CLI retries are configurable with `TUTR_INTEGRATION_RETRIES` (default `2`) and `TUTR_INTEGRATION_RETRY_BACKOFF_SECONDS` (default `2`) to reduce transient provider/CLI flakiness.
+- Keep live integration prompt/expectation cases in `tests/integration_live_cases.json`; each case uses a single `input` string and structured `expected_any_of` matcher variants (command/flags/tokens/substrings) instead of regex-only checks.
 - Ollama configuration uses `ollama_host` in `TutrConfig` and supports `OLLAMA_HOST` env override; default host is `http://localhost:11434`.
 - For releases, build and validate artifacts with `uv run poe dist` before any upload, then publish with `uv run poe publish_testpypi` and `uv run poe publish_pypi` using `TWINE_USERNAME=__token__` and an API token in `TWINE_PASSWORD`.
 - When documenting shell rc auto-start for `tutr`, always include a recursion guard env var (for example `TUTR_AUTOSTARTED`) because the wrapper shell sources the user's rc file.
