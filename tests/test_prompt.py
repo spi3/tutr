@@ -196,3 +196,11 @@ class TestSystemPrompt:
         assert "terminal command assistant" in SYSTEM_PROMPT
         assert "JSON" in SYSTEM_PROMPT
         assert "command" in SYSTEM_PROMPT
+
+    def test_system_prompt_enforces_json_only_output(self):
+        """System prompt should explicitly forbid non-JSON wrappers."""
+        assert "exactly one JSON object and nothing else" in SYSTEM_PROMPT
+        assert "first character of your response must be `{`" in SYSTEM_PROMPT
+        assert "Do not include markdown, code fences" in SYSTEM_PROMPT
+        assert "Never output tokens such as `start_thought`" in SYSTEM_PROMPT
+        assert "parseable by `json.loads`" in SYSTEM_PROMPT

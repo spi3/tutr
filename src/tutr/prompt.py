@@ -14,6 +14,15 @@ Return **ONLY** valid JSON matching this schema:
 
 {json.dumps(CommandResponse.model_json_schema())}
 
+Hard requirements:
+- Output exactly one JSON object and nothing else.
+- The first character of your response must be `{{` and the last character must be `}}`.
+- Do not include markdown, code fences, comments, prefixes, or suffixes.
+- Do not include analysis, reasoning, or explanatory prose outside JSON fields.
+- Never output tokens such as `start_thought`, `thoughtful`, `<think>`, or similar reasoning markers.
+- Ensure the JSON is syntactically valid and parseable by `json.loads`.
+- Use only keys defined by the schema above.
+
 </critical>
 """
 
