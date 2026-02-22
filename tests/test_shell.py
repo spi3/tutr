@@ -422,3 +422,24 @@ class TestShellLaunchEnv:
         launch = _build_shell_launch_config()
         assert launch.env.get("TUTR_ACTIVE") == "1"
         assert launch.env.get("TUTR_AUTOSTARTED") == "1"
+
+    @patch("tutr.shell.detection._detect_shell", return_value=("zsh", "/bin/zsh"))
+    @patch("tutr.shell.detection.write_zsh_rcdir", return_value="/tmp/tutr_test_zdotdir")
+    def test_zsh_launch_sets_zdotdir_and_uses_interactive_argv(self, _write, _detect):
+        launch = _build_shell_launch_config()
+        assert launch.argv == ["/bin/zsh", "-i"]
+        assert launch.env.get("ZDOTDIR") == "/tmp/tutr_test_zdotdir"
+        assert launch.cleanup_paths == ["/tmp/tutr_test_zdotdir"]
+
+    @patch("tutr.shell.detection._detect_shell", return_value=("powershell", "C:/pwsh.exe"))
+    @patch("tutr.shell.detection.write_powershell_profile", return_value="/tmp/tutr_profile.ps1")
+    def test_powershell_launch_uses_expected_args_and_profile_cleanup(self, _write, _detect):
+        launch = _build_shell_launch_config()
+        assert launch.argv == [
+            "C:/pwsh.exe",
+            "-NoLogo",
+            "-NoExit",
+            "-File",
+            "/tmp/tutr_profile.ps1",
+        ]
+        assert launch.cleanup_paths == ["/tmp/tutr_profile.ps1"]
