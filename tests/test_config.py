@@ -57,6 +57,16 @@ class TestLoadConfig:
 
         assert result.show_explanation is True
 
+    def test_malformed_json_falls_back_to_defaults(self, config_dir, config_file, caplog):
+        config_dir.mkdir(parents=True)
+        config_file.write_text("{ invalid json")
+
+        with caplog.at_level("WARNING", logger="tutr.config"):
+            result = load_config()
+
+        assert result == TutrConfig()
+        assert "falling back to defaults" in caplog.text
+
     def test_tutr_model_env_overrides_file(self, config_dir, config_file, monkeypatch):
         config_dir.mkdir(parents=True)
         config_file.write_text(json.dumps({"model": "openai/gpt-4o"}))

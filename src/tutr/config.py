@@ -43,11 +43,19 @@ def load_config() -> TutrConfig:
     raw_config: dict[str, Any] = {}
 
     if CONFIG_FILE.exists():
-        with open(CONFIG_FILE) as f:
-            loaded = json.load(f)
-        if isinstance(loaded, dict):
-            raw_config = loaded
-        log.debug("loaded config from %s", CONFIG_FILE)
+        try:
+            with open(CONFIG_FILE) as f:
+                loaded = json.load(f)
+        except json.JSONDecodeError as exc:
+            log.warning(
+                "invalid config JSON in %s (%s); falling back to defaults",
+                CONFIG_FILE,
+                exc,
+            )
+        else:
+            if isinstance(loaded, dict):
+                raw_config = loaded
+            log.debug("loaded config from %s", CONFIG_FILE)
 
     config = TutrConfig.model_validate(raw_config)
 
