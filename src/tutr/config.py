@@ -43,7 +43,16 @@ PROVIDERS: dict[str, ProviderInfo] = {
 
 
 def load_config() -> TutrConfig:
-    """Load config from file, with env var overrides."""
+    """Load config from file, with env var overrides.
+
+    Reads ``~/.tutr/config.json`` and applies environment variable overrides
+    (``TUTR_MODEL``, ``TUTR_UPDATE_CHECK``, provider API key vars, and
+    ``OLLAMA_HOST``).  Falls back to defaults when the file is absent or
+    contains invalid JSON.
+
+    Returns:
+        The resolved ``TutrConfig`` instance.
+    """
     raw_config: dict[str, Any] = {}
 
     _ensure_config_dir_permissions(create=False)
@@ -91,7 +100,17 @@ def load_config() -> TutrConfig:
 
 
 def save_config(config: TutrConfig) -> None:
-    """Save config to file."""
+    """Save config to file.
+
+    Writes ``~/.tutr/config.json`` atomically (temp file + rename) with
+    0o600 permissions so the file is only readable by the owner.
+
+    Args:
+        config: Configuration to persist.
+
+    Raises:
+        OSError: If the config directory or file cannot be created or written.
+    """
     _ensure_config_dir_permissions(create=True)
     # Write to a temp file opened as 0o600, then atomically replace.
     temp_file = CONFIG_DIR / f".{CONFIG_FILE.name}.{os.getpid()}.{secrets.token_hex(8)}.tmp"
@@ -142,7 +161,14 @@ def _ensure_config_file_permissions() -> None:
 
 
 def needs_setup() -> bool:
-    """Check if initial setup is needed."""
+    """Check if initial setup is needed.
+
+    Setup is considered complete when ``~/.tutr/config.json`` already exists
+    or any supported provider API key environment variable is set.
+
+    Returns:
+        ``True`` when first-time setup should be offered to the user.
+    """
     if CONFIG_FILE.exists():
         return False
     # Any provider API key env var set means the user configured externally

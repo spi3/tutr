@@ -18,7 +18,19 @@ litellm.suppress_debug_info = True
 
 
 def query_llm(messages: list[LLMMessage], config: TutrConfig | None = None) -> CommandResponse:
-    """Send messages to the LLM and return a parsed CommandResponse."""
+    """Send messages to the LLM and return a parsed CommandResponse.
+
+    Args:
+        messages: Conversation messages to send, in LiteLLM format.
+        config: Tutr configuration; uses defaults when not provided.
+
+    Returns:
+        Parsed command and explanation from the LLM response.
+
+    Raises:
+        litellm.exceptions.APIConnectionError: On LLM provider connectivity errors.
+        litellm.exceptions.AuthenticationError: On invalid or missing API key.
+    """
     config = config or TutrConfig()
     model = config.model
     api_key = config.api_key
