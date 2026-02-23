@@ -61,6 +61,12 @@ fi</code></pre>
   export TUTR_AUTOSTARTED=1
   exec tutr
 fi</code></pre>
+        <h3>PowerShell (<code>$PROFILE</code>)</h3>
+        <pre><code>if (-not $env:TUTR_AUTOSTARTED -and -not $env:TUTR_SKIP_AUTOSTART) {
+  $env:TUTR_AUTOSTARTED = "1"
+  tutr
+}</code></pre>
+        <p>To find or create your PowerShell profile file, run <code>$PROFILE</code> in a PowerShell session. On Windows this is typically <code>~\Documents\PowerShell\Microsoft.PowerShell_profile.ps1</code>; on Linux/macOS it is typically <code>~/.config/powershell/Microsoft.PowerShell_profile.ps1</code>.</p>
         <p class="note"><strong>Note:</strong> <code>TUTR_AUTOSTARTED</code> prevents recursive startup because <code>tutr</code> sources your shell rc file.</p>
       </main>
 
