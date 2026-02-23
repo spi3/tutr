@@ -73,6 +73,18 @@ Optional live integration tests:
 TUTR_RUN_INTEGRATION=1 uv run pytest -q -m integration
 ```
 
+## Branch and Commit Conventions
+
+- Branch off `main` for all changes; use short descriptive names (e.g. `fix-ollama-host`, `add-no-color-docs`).
+- Write commit messages in the imperative mood with a type prefix:
+  - `feat:` — new user-facing functionality
+  - `fix:` — bug fix
+  - `docs:` — documentation-only changes
+  - `refactor:` — code restructuring without behaviour change
+  - `test:` — test additions or fixes
+  - `chore:` — tooling, dependencies, release plumbing
+- Keep commits focused; one logical change per commit.
+
 ## Pull Requests
 
 1. Create a branch from `main`.
