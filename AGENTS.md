@@ -54,6 +54,7 @@ When an agent discovers new information, conventions, or workflow guidance that 
 - Keep live integration prompt/expectation cases in `tests/integration_live_cases.json`; each case uses a single `input` string and structured `expected_any_of` matcher variants (command/flags/tokens/substrings) instead of regex-only checks.
 - Ollama configuration uses `ollama_host` in `TutrConfig` and supports `OLLAMA_HOST` env override; default host is `http://localhost:11434`.
 - Releases are performed with `scripts/release.sh` (for example `scripts/release.sh patch`), which bumps `pyproject.toml`, runs `uv run poe check`, creates/pushes a `vX.Y.Z` tag, and creates a GitHub release.
+- Production PyPI publishing is authoritative via GitHub Actions trusted publishing in `.github/workflows/python-publish.yml` (OIDC, no `twine` credentials); `uv run poe publish_testpypi`/`uv run poe publish_pypi` are manual maintainer fallback commands only (staging or exceptional recovery).
 - Release tags are standardized to `vX.Y.Z` and CI validates that the tag version matches `project.version` in `pyproject.toml`; `0.1.0` is a legacy one-off tag only.
 - When documenting shell rc auto-start for `tutr`, always include a recursion guard env var (for example `TUTR_AUTOSTARTED`) because the wrapper shell sources the user's rc file.
 - The shell wrapper launch config sets both `TUTR_ACTIVE=1` and `TUTR_AUTOSTARTED=1` for the child shell environment to prevent recursive auto-start.

@@ -95,5 +95,13 @@ scripts/release.sh patch
 You can also pass `minor`, `major`, or an explicit version like `scripts/release.sh 0.1.6`.
 The script updates `pyproject.toml`, runs checks, creates/pushes a `vX.Y.Z` tag, and creates the GitHub release.
 
+Authoritative production publish path: GitHub Actions trusted publishing.
+- Triggered by publishing a GitHub Release (created by `scripts/release.sh`).
+- Implemented by `.github/workflows/python-publish.yml` using OIDC (`id-token: write`) and `pypa/gh-action-pypi-publish`.
+
+Manual `twine` publish commands are non-canonical maintainer fallbacks:
+- `uv run poe publish_testpypi` is for staging to TestPyPI.
+- `uv run poe publish_pypi` is only for exceptional/manual recovery scenarios with `TWINE_USERNAME`/`TWINE_PASSWORD`.
+
 Release CI enforces `vX.Y.Z` tags and checks that the tag version matches `pyproject.toml`.
 The historical `0.1.0` tag is legacy and should not be reused for new releases.

@@ -47,6 +47,17 @@ python -m http.server 8000</code></pre>
         <h2>Create a release</h2>
         <pre><code>scripts/release.sh patch</code></pre>
         <p>Use <code>minor</code>, <code>major</code>, or an explicit <code>X.Y.Z</code> version as needed.</p>
+
+        <h2>Publish path</h2>
+        <p>
+          Authoritative production publish path: GitHub Actions trusted publishing from
+          <code>.github/workflows/python-publish.yml</code>, triggered by a published GitHub Release.
+        </p>
+        <p>
+          Manual <code>twine</code> uploads are maintainer fallbacks only. Use
+          <code>uv run poe publish_testpypi</code> for staging, and reserve
+          <code>uv run poe publish_pypi</code> for exceptional/manual recovery scenarios.
+        </p>
       </main>
 
       <footer class="footer">tutr docs</footer>
