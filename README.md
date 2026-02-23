@@ -226,6 +226,7 @@ Config is stored in `~/.tutr/config.json`. Environment variables override the co
 | `OLLAMA_HOST` | Ollama host URL override | `http://localhost:11434` |
 | `TUTR_UPDATE_CHECK` | Enable (`1/true`) or disable (`0/false`) update checks | `true` |
 | `TUTR_SHELL` | Override wrapper shell detection (`bash`, `zsh`, `pwsh`, or `powershell`) | auto-detected |
+| `NO_COLOR` | Disable ANSI color output (any value; follows [no-color.org](https://no-color.org)) | unset |
 
 You can edit settings with `tutr-cli configure` or directly in `~/.tutr/config.json`.
 
