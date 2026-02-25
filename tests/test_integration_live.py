@@ -2,14 +2,16 @@
 
 from __future__ import annotations
 
+import datetime
 import json
 import os
 import re
 import shlex
 import subprocess
+import sys
 import time
 from pathlib import Path
-from typing import Literal
+from typing import Literal, TypedDict
 
 import pytest
 from pydantic import BaseModel, ValidationError
@@ -18,6 +20,21 @@ from tutr.config import TutrConfig, load_config
 
 _LAST_LIVE_CALL_AT: float | None = None
 _CASES_FILE = Path(__file__).with_name("integration_live_cases.json")
+
+
+class _ReportEntry(TypedDict):
+    input: str
+    model: str
+    command: str
+    matched: bool
+    prompt_tokens: int | None
+    completion_tokens: int | None
+    duration_seconds: float | None
+    llm_input_messages: list[dict[str, str]]
+    llm_raw_output: str
+
+
+_REPORT_DATA: list[_ReportEntry] = []
 
 
 def _load_live_config() -> TutrConfig:
@@ -89,6 +106,7 @@ def _build_cli_env(config: TutrConfig, tmp_path: Path) -> dict[str, str]:
     env = os.environ.copy()
     env["NO_COLOR"] = "1"
     env["TUTR_UPDATE_CHECK"] = "0"
+    env["TUTR_DEBUG_METRICS"] = "1"
 
     if not _has_integration_overrides():
         return env
@@ -167,6 +185,160 @@ def _wait_between_live_requests() -> None:
         if remaining > 0:
             time.sleep(remaining)
     _LAST_LIVE_CALL_AT = time.monotonic()
+
+
+# ---------------------------------------------------------------------------
+# Metrics parsing helpers
+# ---------------------------------------------------------------------------
+
+
+def _parse_metrics_from_stderr(stderr: str) -> dict[str, object] | None:
+    """Return the last TUTR_METRICS JSON object emitted to stderr, or None."""
+    last_json: str | None = None
+    for line in stderr.splitlines():
+        if line.startswith("TUTR_METRICS:"):
+            last_json = line[len("TUTR_METRICS:") :]
+    if last_json is None:
+        return None
+    try:
+        data = json.loads(last_json)
+        return data if isinstance(data, dict) else None
+    except json.JSONDecodeError:
+        return None
+
+
+def _get_metric_int(metrics: dict[str, object] | None, key: str) -> int | None:
+    if metrics is None:
+        return None
+    val = metrics.get(key)
+    return val if isinstance(val, int) else None
+
+
+def _get_metric_float(metrics: dict[str, object] | None, key: str) -> float | None:
+    if metrics is None:
+        return None
+    val = metrics.get(key)
+    if isinstance(val, (int, float)):
+        return float(val)
+    return None
+
+
+def _get_metric_str(metrics: dict[str, object] | None, key: str) -> str:
+    if metrics is None:
+        return ""
+    val = metrics.get(key)
+    return str(val) if val is not None else ""
+
+
+def _get_metric_messages(metrics: dict[str, object] | None) -> list[dict[str, str]]:
+    if metrics is None:
+        return []
+    val = metrics.get("messages")
+    if not isinstance(val, list):
+        return []
+    result: list[dict[str, str]] = []
+    for item in val:
+        if isinstance(item, dict):
+            result.append({str(k): str(v) for k, v in item.items()})
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Report writer
+# ---------------------------------------------------------------------------
+
+
+def _write_integration_report(data: list[_ReportEntry]) -> None:
+    """Write a Markdown integration test report to disk."""
+    report_path_str = os.environ.get("TUTR_INTEGRATION_REPORT_PATH", "integration_report.md")
+    report_path = Path(report_path_str)
+    now = datetime.datetime.now().isoformat(timespec="seconds")
+    passed = sum(1 for d in data if d["matched"])
+    model = data[0]["model"] if data else "unknown"
+
+    lines: list[str] = [
+        "# Integration Test Report\n",
+        f"**Generated**: {now}  ",
+        f"**Model**: `{model}`  ",
+        f"**Results**: {passed}/{len(data)} passed\n",
+        "---\n",
+        "## Summary\n",
+        "| # | Input | Command | Tokens In | Tokens Out | Duration | Status |",
+        "|---|-------|---------|-----------|------------|----------|--------|",
+    ]
+    for i, entry in enumerate(data, 1):
+        tokens_in = str(entry["prompt_tokens"]) if entry["prompt_tokens"] is not None else "N/A"
+        tokens_out = (
+            str(entry["completion_tokens"]) if entry["completion_tokens"] is not None else "N/A"
+        )
+        dur = entry["duration_seconds"]
+        duration_str = f"{dur:.2f}s" if dur is not None else "N/A"
+        status = "PASS" if entry["matched"] else "FAIL"
+        label = entry["input"][:55] + "\u2026" if len(entry["input"]) > 55 else entry["input"]
+        lines.append(
+            f"| {i} | {label} | `{entry['command']}` "
+            f"| {tokens_in} | {tokens_out} | {duration_str} | {status} |"
+        )
+    lines += ["", "---\n"]
+
+    # System prompt shown once (collapsed) — same for every test
+    all_msgs = data[0]["llm_input_messages"] if data else []
+    sys_msgs = [m for m in all_msgs if m.get("role") == "system"]
+    if sys_msgs:
+        lines += [
+            "## System Prompt\n",
+            "<details>",
+            "<summary>Click to expand</summary>\n",
+            "```",
+            sys_msgs[0].get("content", ""),
+            "```\n",
+            "</details>\n",
+            "---\n",
+        ]
+
+    lines.append("## Test Details\n")
+    for i, entry in enumerate(data, 1):
+        status = "PASS" if entry["matched"] else "FAIL"
+        tokens_in = str(entry["prompt_tokens"]) if entry["prompt_tokens"] is not None else "N/A"
+        tokens_out = (
+            str(entry["completion_tokens"]) if entry["completion_tokens"] is not None else "N/A"
+        )
+        dur = entry["duration_seconds"]
+        duration_str = f"{dur:.3f}s" if dur is not None else "N/A"
+        user_msgs = [m for m in entry["llm_input_messages"] if m.get("role") == "user"]
+
+        lines += [
+            f"### Case {i}: {entry['input']}\n",
+            f"**Status**: {status}  ",
+            f"**Suggested Command**: `{entry['command']}`  ",
+            f"**Tokens**: {tokens_in} in, {tokens_out} out  ",
+            f"**Duration**: {duration_str}\n",
+        ]
+        if user_msgs:
+            lines += [
+                "**LLM User Message**:\n",
+                "```",
+                user_msgs[0].get("content", ""),
+                "```\n",
+            ]
+        if entry["llm_raw_output"]:
+            lines += [
+                "**LLM Raw Output**:\n",
+                "```json",
+                entry["llm_raw_output"],
+                "```\n",
+            ]
+        lines.append("---\n")
+
+    report_path.write_text("\n".join(lines), encoding="utf-8")
+    print(f"\nIntegration report written to: {report_path.absolute()}", file=sys.stderr)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _integration_report_writer():
+    yield
+    if _REPORT_DATA:
+        _write_integration_report(_REPORT_DATA)
 
 
 class CommandExpectationVariant(BaseModel):
@@ -326,6 +498,7 @@ class TestCliOutputEvaluation:
         _wait_between_live_requests()
 
         completed = _run_tutr_cli_with_retries(case.input.split(), cwd=tmp_path, env=env)
+        metrics = _parse_metrics_from_stderr(completed.stderr)
         cli_output = f"{completed.stdout}\n{completed.stderr}".strip()
         assert completed.returncode == 0, (
             f"tutr-cli failed for input {case.input!r}\n"
@@ -340,8 +513,23 @@ class TestCliOutputEvaluation:
         command = _extract_suggested_command(completed.stdout)
         _assert_safe_single_command(command)
 
+        matched = any(_matches_variant(command, variant) for variant in case.expected_any_of)
+        _REPORT_DATA.append(
+            _ReportEntry(
+                input=case.input,
+                model=config.model,
+                command=command,
+                matched=matched,
+                prompt_tokens=_get_metric_int(metrics, "prompt_tokens"),
+                completion_tokens=_get_metric_int(metrics, "completion_tokens"),
+                duration_seconds=_get_metric_float(metrics, "duration_seconds"),
+                llm_input_messages=_get_metric_messages(metrics),
+                llm_raw_output=_get_metric_str(metrics, "llm_output"),
+            )
+        )
+
         # Accuracy: command should semantically match one accepted structured variant.
-        assert any(_matches_variant(command, variant) for variant in case.expected_any_of), (
+        assert matched, (
             f"low-accuracy command: {command!r}; expected pattern hint: {case.quality_hint}"
         )
 

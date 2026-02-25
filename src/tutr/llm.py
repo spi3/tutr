@@ -2,6 +2,9 @@
 
 import json
 import logging
+import os
+import sys
+import time
 
 import litellm
 from pydantic import ValidationError
@@ -50,13 +53,26 @@ def query_llm(messages: list[LLMMessage], config: TutrConfig | None = None) -> C
 
     indicator = build_llm_wait_indicator()
     indicator.start()
+    t0 = time.perf_counter()
     try:
         response = litellm.completion(**kwargs)
     finally:
         indicator.stop()
+    duration = time.perf_counter() - t0
 
     content = response.choices[0].message.content.strip()
     log.debug("raw response: %s", content)
+
+    if os.environ.get("TUTR_DEBUG_METRICS") == "1":
+        usage = response.usage
+        metrics: dict[str, object] = {
+            "duration_seconds": round(duration, 3),
+            "prompt_tokens": usage.prompt_tokens if usage else None,
+            "completion_tokens": usage.completion_tokens if usage else None,
+            "llm_output": content,
+            "messages": list(messages),
+        }
+        print(f"TUTR_METRICS:{json.dumps(metrics)}", file=sys.stderr)
 
     try:
         data = json.loads(content)
